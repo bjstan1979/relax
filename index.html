@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>静心 · 声音疗愈</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-card-active: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border-active: rgba(139,92,246,0.4);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139,92,246,0.3);
+  --accent2: #6366f1;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ===== Background ===== */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, #c4b5fd, #8b5cf6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Section Title ===== */
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 16px;
+  padding-left: 4px;
+}
+
+/* ===== Preset Scenes ===== */
+.presets {
+  margin-bottom: 36px;
+}
+
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.preset-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.preset-btn:hover {
+  background: var(--bg-card-active);
+  border-color: var(--border-active);
+  transform: translateY(-1px);
+}
+
+.preset-btn.active {
+  background: var(--bg-card-active);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.preset-btn .preset-icon {
+  font-size: 1.4rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.preset-btn .preset-name {
+  font-weight: 500;
+  display: block;
+}
+
+.preset-btn .preset-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ===== Sound Cards ===== */
+.sounds {
+  margin-bottom: 36px;
+}
+
+.sounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.sound-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.sound-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sound-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+}
+
+.sound-card.active {
+  background: var(--bg-card-active);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.sound-card.active::before {
+  opacity: 1;
+}
+
+.sound-card .card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.sound-icon {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.sound-name {
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.sound-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.sound-toggle {
+  width: 40px;
+  height: 22px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.3s ease;
+  margin-bottom: 12px;
+}
+
+.sound-card.active .sound-toggle {
+  background: var(--accent);
+}
+
+.sound-toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: white;
+  top: 2px; left: 2px;
+  transition: transform 0.3s ease;
+}
+
+.sound-card.active .sound-toggle::after {
+  transform: translateX(18px);
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.sound-card.active .volume-control {
+  opacity: 1;
+}
+
+.volume-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+/* ===== Timer ===== */
+.timer {
+  margin-bottom: 36px;
+}
+
+.timer-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.timer-display {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.timer-time {
+  font-size: 3rem;
+  font-weight: 200;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.timer-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.timer-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.timer-preset-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.timer-preset-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+.timer-preset-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.timer-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 28px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.timer-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.timer-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.timer-btn.primary:hover {
+  background: #7c3aed;
+}
+
+/* ===== Breathing Guide ===== */
+.breathing {
+  margin-bottom: 36px;
+}
+
+.breathing-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.breath-circle-container {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 20px;
+}
+
+.breath-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.4), rgba(99,102,241,0.1));
+  border: 2px solid rgba(139,92,246,0.3);
+  transform: translate(-50%, -50%) scale(1);
+  transition: none;
+}
+
+.breath-circle.inhale {
+  animation: breathIn 4s ease-in-out forwards;
+}
+
+.breath-circle.hold {
+  animation: none;
+  transform: translate(-50%, -50%) scale(3);
+}
+
+.breath-circle.exhale {
+  animation: breathOut 8s ease-in-out forwards;
+}
+
+@keyframes breathIn {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, -50%) scale(3); }
+}
+
+@keyframes breathOut {
+  from { transform: translate(-50%, -50%) scale(3); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+.breath-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  border: 1px solid rgba(139,92,246,0.15);
+  transform: translate(-50%, -50%);
+}
+
+.breath-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  min-height: 1.5em;
+}
+
+.breath-toggle {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 24px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.breath-toggle:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.breath-toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ===== Playback Controls ===== */
+.playback-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 28px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: var(--bg-card-active);
+  border-color: var(--border-active);
+}
+
+.control-btn.pause-btn.paused {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.control-btn.reset-btn:hover {
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.control-icon {
+  font-size: 1.1rem;
+}
+
+/* ===== Saved Configs ===== */
+.configs {
+  margin-bottom: 36px;
+}
+
+.configs-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.configs-actions {
+  margin-bottom: 16px;
+}
+
+.config-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.config-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.config-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.config-btn.primary:hover {
+  background: #7c3aed;
+}
+
+.configs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.config-item:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--border-active);
+}
+
+.config-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-item-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.config-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.config-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.config-item-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.config-item-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+.config-item-btn.load:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.config-item-btn.delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.configs-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 12px 0;
+}
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .app-container { padding: 16px 14px 60px; }
+  .header h1 { font-size: 1.5rem; }
+  .presets-grid { grid-template-columns: repeat(2, 1fr); }
+  .sounds-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .sound-card { padding: 14px; }
+  .timer-time { font-size: 2.2rem; }
+  .volume-slider { height: 28px; }
+  .volume-slider::-webkit-slider-thumb { width: 22px; height: 22px; }
+  .volume-slider::-moz-range-thumb { width: 22px; height: 22px; }
+  .playback-controls { flex-direction: column; gap: 8px; }
+  .control-btn { justify-content: center; }
+  .config-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .config-item-actions { margin-left: 0; align-self: flex-end; }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== Save Modal ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 90%;
+  max-width: 360px;
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.modal-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.modal-input:focus {
+  border-color: var(--accent);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.modal-btn.confirm {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--accent);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.toast.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.presets-grid, .sounds-grid, .timer-panel, .breathing-panel {
+  animation: fadeIn 0.5s ease-out;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="app-container">
+  <!-- Header -->
+  <header class="header">
+    <h1>静心 · 声音疗愈</h1>
+    <p>聆听内在，回归平静</p>
+  </header>
+
+  <!-- Preset Scenes -->
+  <section class="presets">
+    <div class="section-title">场景预设</div>
+    <div class="presets-grid" id="presets-grid"></div>
+  </section>
+
+  <!-- Sound Cards -->
+  <section class="sounds">
+    <div class="section-title">声音选择</div>
+    <div class="sounds-grid" id="sounds-grid"></div>
+  </section>
+
+  <!-- Playback Controls -->
+  <section class="playback-controls">
+    <button class="control-btn pause-btn" id="pause-btn" onclick="togglePauseAll()">
+      <span class="control-icon" id="pause-icon">⏸</span>
+      <span id="pause-text">全部暂停</span>
+    </button>
+    <button class="control-btn reset-btn" onclick="resetAll()">
+      <span class="control-icon">↺</span>
+      <span>全部复位</span>
+    </button>
+  </section>
+
+  <!-- Saved Configs -->
+  <section class="configs">
+    <div class="section-title">我的配置</div>
+    <div class="configs-panel">
+      <div class="configs-actions">
+        <button class="config-btn primary" onclick="saveCurrentConfig()">保存当前配置</button>
+      </div>
+      <div class="configs-list" id="configs-list"></div>
+    </div>
+  </section>
+
+  <!-- Save Config Modal -->
+  <div class="modal-overlay" id="save-modal" onclick="closeSaveModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">保存配置</div>
+      <input type="text" class="modal-input" id="config-name-input" placeholder="输入配置名称" maxlength="20">
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeSaveModal()">取消</button>
+        <button class="modal-btn confirm" onclick="confirmSaveConfig()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <section class="timer">
+    <div class="section-title">定时关闭</div>
+    <div class="timer-panel">
+      <div class="timer-display">
+        <div class="timer-time" id="timer-time">--:--</div>
+        <div class="timer-label" id="timer-label">选择时长开始</div>
+      </div>
+      <div class="timer-presets" id="timer-presets"></div>
+      <div class="timer-controls">
+        <button class="timer-btn primary" id="timer-start" onclick="toggleTimer()">开始</button>
+        <button class="timer-btn" id="timer-reset" onclick="resetTimer()">重置</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Breathing Guide -->
+  <section class="breathing">
+    <div class="section-title">呼吸引导 · 4-7-8 呼吸法</div>
+    <div class="breathing-panel">
+      <div class="breath-circle-container">
+        <div class="breath-ring"></div>
+        <div class="breath-circle" id="breath-circle"></div>
+      </div>
+      <div class="breath-text" id="breath-text">点击开始呼吸引导</div>
+      <button class="breath-toggle" id="breath-toggle" onclick="toggleBreathing()">开始引导</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    静心 · 声音疗愈 — 用声音拥抱宁静
+  </footer>
+</div>
+
+<script>
+// ===== Sound Definitions =====
+const SOUNDS = [
+  { id: 'theta',   name: 'θ 波',     desc: '深度放松 · 冥想',     icon: '🧘' },
+  { id: 'alpha',   name: 'α 波',     desc: '放松清醒 · 创意',     icon: '✨' },
+  { id: 'delta',   name: 'δ 波',     desc: '深度睡眠 · 疗愈',     icon: '🌙' },
+  { id: 'beta',    name: 'β 波',     desc: '平静专注 · 清晰',     icon: '🎯' },
+  { id: 'gamma',   name: 'γ 波',     desc: '高级冥想 · 洞察',     icon: '🔮' },
+  { id: 'bowl',    name: '颂钵',     desc: '共鸣 · 深层疗愈',     icon: '🪷' },
+  { id: 'rain',    name: '雨声',     desc: '淅沥 · 安宁',         icon: '🌧️' },
+  { id: 'ocean',   name: '海浪',     desc: '潮涌 · 释放',         icon: '🌊' },
+  { id: 'whitenoise', name: '白噪音', desc: '均匀 · 屏蔽',        icon: '☁️' },
+  { id: 'birds',   name: '森林鸟鸣', desc: '晨光 · 生机',         icon: '🐦' },
+  { id: 'stream',  name: '溪流',     desc: '潺潺 · 流动',         icon: '💧' },
+  { id: 'wind',    name: '风声',     desc: '轻拂 · 自由',         icon: '🍃' },
+];
+
+const PRESETS = [
+  { id: 'meditate', name: '深度冥想', desc: 'θ波 + 颂钵',     icon: '🧘', sounds: ['theta', 'bowl'] },
+  { id: 'sleep',    name: '睡眠辅助', desc: 'δ波 + 雨声',      icon: '😴', sounds: ['delta', 'rain'] },
+  { id: 'focus',    name: '专注工作', desc: 'α波 + 白噪音',    icon: '🎯', sounds: ['alpha', 'whitenoise'] },
+  { id: 'nature',   name: '自然放松', desc: '海浪 + 鸟鸣',     icon: '🌿', sounds: ['ocean', 'birds'] },
+  { id: 'healing',  name: '疗愈时刻', desc: '颂钵 + 溪流',     icon: '💖', sounds: ['bowl', 'stream'] },
+];
+
+const TIMER_PRESETS = [5, 10, 15, 20, 30, 60];
+
+// ===== State =====
+let activeSounds = {};
+let timerInterval = null;
+let timerRemaining = 0;
+let timerDuration = 0;
+let timerRunning = false;
+let timerEndTime = 0; // absolute end time for accurate timing when screen is off
+let selectedTimerPreset = null;
+let breathingActive = false;
+let breathingTimeout = null;
+let activePreset = null;
+let wakeLock = null; // Wake Lock sentinel
+
+// ===== Wake Lock (keeps screen on during playback) =====
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      wakeLock = null;
+    });
+  } catch (err) {
+    console.warn('Wake Lock request failed:', err);
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try { await wakeLock.release(); } catch(e) {}
+    wakeLock = null;
+  }
+}
+
+// Re-request wake lock when page becomes visible again (e.g. after tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    // Re-request wake lock if sounds are playing
+    if (Object.keys(activeSounds).length > 0) {
+      requestWakeLock();
+    }
+    // Re-sync timer display if running
+    if (timerRunning && timerEndTime > 0) {
+      const now = Date.now();
+      timerRemaining = Math.max(0, Math.round((timerEndTime - now) / 1000));
+      updateTimerDisplay();
+      // If timer expired while screen was off, trigger stop
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timer-start').textContent = '开始';
+        document.getElementById('timer-label').textContent = '时间到，已自动停止';
+        Object.keys(activeSounds).forEach(id => stopSound(id));
+        setTimeout(() => {
+          SOUNDS.forEach(s => updateSoundCard(s.id));
+          updatePresetButtons();
+        }, 600);
+      }
+    }
+    // Resume AudioContext if it got suspended
+    if (masterAudioCtx && masterAudioCtx.state === 'suspended') {
+      masterAudioCtx.resume();
+    }
+    // Re-start master audio element if sounds are playing but it got paused
+    if (Object.keys(activeSounds).length > 0 && masterAudioElement && masterAudioElement.paused) {
+      masterAudioElement.play().catch(e => console.log('masterAudioElement resume:', e));
+    }
+  }
+});
+
+// ===== Audio Engine (Web Audio API + BufferSource + MediaStreamDestination Bridge) =====
+// Architecture:
+//   1. AudioBufferSourceNode + GainNode for each sound (volume control works on iOS)
+//   2. All gainNodes connect to masterStreamDest (MediaStreamDestination)
+//   3. masterStreamDest.stream feeds a single <audio> element (masterAudioElement)
+//   4. The <audio> element holds the iOS media session — keeps audio alive when screen locks
+//   5. Media Session API registers lock-screen controls
+// This avoids createMediaElementSource (iOS mutes it on lock) while keeping GainNode volume control.
+
+let masterAudioCtx = null;
+let masterStreamDest = null;   // MediaStreamDestination — all audio routes here
+let masterAudioElement = null; // <audio> element that plays the stream (holds media session)
+const audioBuffers = {};   // id -> AudioBuffer (decoded, cached)
+const bufferLoading = {};  // id -> Promise (prevent duplicate fetches)
+
+function getAudioCtx() {
+  if (!masterAudioCtx) {
+    masterAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterStreamDest = masterAudioCtx.createMediaStreamDestination();
+    masterAudioElement = new Audio();
+    masterAudioElement.srcObject = masterStreamDest.stream;
+  }
+  return masterAudioCtx;
+}
+
+function ensureAudioCtxRunning() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') {
+    return ctx.resume();
+  }
+  return Promise.resolve();
+}
+
+// Fetch and decode an mp3 into an AudioBuffer (cached)
+async function loadAudioBuffer(id) {
+  if (audioBuffers[id]) return audioBuffers[id];
+  if (bufferLoading[id]) return bufferLoading[id];
+
+  bufferLoading[id] = (async () => {
+    try {
+      const resp = await fetch(`audio_processed/${id}.mp3`);
+      const arrayBuf = await resp.arrayBuffer();
+      const ctx = getAudioCtx();
+      const decoded = await ctx.decodeAudioData(arrayBuf);
+      audioBuffers[id] = decoded;
+      return decoded;
+    } catch (err) {
+      console.warn(`Failed to load audio buffer for ${id}:`, err);
+      delete bufferLoading[id];
+      throw err;
+    }
+  })();
+
+  return bufferLoading[id];
+}
+
+// ===== Core sound functions =====
+
+function startSound(id) {
+  if (activeSounds[id]) return;
+
+  const vol = 0.5;
+  const sound = { gainNode: null, source: null, volume: vol, fadeId: 0, playing: false };
+  activeSounds[id] = sound;
+
+  ensureAudioCtxRunning().then(() => loadAudioBuffer(id)).then(buffer => {
+    // Sound may have been stopped while loading
+    if (!activeSounds[id] || activeSounds[id] !== sound) return;
+
+    const ctx = getAudioCtx();
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0; // start silent for fade-in
+    gainNode.connect(masterStreamDest);
+    sound.gainNode = gainNode;
+
+    playBufferLoop(sound, buffer);
+    sound.playing = true;
+
+    fadeGain(sound, 0, vol, 1000);
+    // Ensure the master <audio> element is playing (holds iOS media session)
+    if (masterAudioElement && masterAudioElement.paused) {
+      masterAudioElement.play().catch(e => console.log('masterAudioElement play:', e));
+    }
+    requestWakeLock();
+    updateMediaSession();
+  }).catch(err => {
+    console.warn(`Failed to start ${id}:`, err);
+    delete activeSounds[id];
+    updateSoundCard(id);
+  });
+}
+
+// Play an AudioBuffer in a seamless loop by re-scheduling before it ends
+function playBufferLoop(sound, buffer) {
+  const ctx = getAudioCtx();
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(sound.gainNode);
+  source.start(0);
+  sound.source = source;
+}
+
+function stopSound(id, immediate) {
+  const sound = activeSounds[id];
+  if (!sound) return;
+  delete activeSounds[id];
+  sound.fadeId++;
+
+  if (!sound.gainNode || !sound.playing) {
+    try { if (sound.source) sound.source.stop(); } catch(e) {}
+    try { if (sound.gainNode) sound.gainNode.disconnect(); } catch(e) {}
+    return;
+  }
+
+  const fadeTime = immediate ? 50 : 500;
+  const currentVol = sound.gainNode.gain.value;
+  fadeGain(sound, currentVol, 0, fadeTime, () => {
+    try { sound.source.stop(); } catch(e) {}
+    try { sound.gainNode.disconnect(); } catch(e) {}
+    if (Object.keys(activeSounds).length === 0) {
+      if (masterAudioElement) masterAudioElement.pause();
+      releaseWakeLock();
+    }
+    updateMediaSession();
+  });
+}
+
+function setVolume(id, vol) {
+  const sound = activeSounds[id];
+  if (!sound || !sound.gainNode) return;
+  sound.volume = vol;
+  sound.fadeId++;
+  sound.gainNode.gain.value = vol;
+}
+
+function fadeGain(sound, from, to, duration, callback) {
+  const myFadeId = ++sound.fadeId;
+  const startTime = performance.now();
+  function step(now) {
+    if (sound.fadeId !== myFadeId) return;
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    sound.gainNode.gain.value = from + (to - from) * progress;
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      sound.gainNode.gain.value = to;
+      if (callback) callback();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// ===== Media Session API (lock screen controls) =====
+
+function updateMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+
+  const activeIds = Object.keys(activeSounds);
+  if (activeIds.length > 0) {
+    const names = activeIds.map(id => {
+      const s = SOUNDS.find(s => s.id === id);
+      return s ? s.name : id;
+    }).join(' + ');
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: names,
+      artist: '静心 · 声音疗愈',
+      album: '声音疗愈',
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (!isPaused) togglePauseAll();
+    });
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (isPaused) togglePauseAll();
+    });
+  } else {
+    navigator.mediaSession.metadata = null;
+  }
+}
+
+function toggleSound(id) {
+  if (activeSounds[id]) {
+    stopSound(id);
+  } else {
+    startSound(id);
+  }
+  updateSoundCard(id);
+  updatePresetButtons();
+  // Clear active preset if current sounds no longer match
+  if (activePreset) {
+    const preset = PRESETS.find(p => p.id === activePreset);
+    if (preset) {
+      const activeIds = new Set(Object.keys(activeSounds));
+      const stillMatches = preset.sounds.every(s => activeIds.has(s));
+      if (!stillMatches) activePreset = null;
+    }
+  }
+}
+
+// ===== UI Rendering =====
+
+function renderPresets() {
+  const grid = document.getElementById('presets-grid');
+  grid.innerHTML = PRESETS.map(p => `
+    <button class="preset-btn" data-preset="${p.id}" onclick="applyPreset('${p.id}')">
+      <span class="preset-icon">${p.icon}</span>
+      <span class="preset-name">${p.name}</span>
+      <span class="preset-desc">${p.desc}</span>
+    </button>
+  `).join('');
+}
+
+function renderSounds() {
+  const grid = document.getElementById('sounds-grid');
+  grid.innerHTML = SOUNDS.map(s => `
+    <div class="sound-card" data-sound="${s.id}" onclick="toggleSound('${s.id}')">
+      <div class="card-content">
+        <span class="sound-icon">${s.icon}</span>
+        <div class="sound-name">${s.name}</div>
+        <div class="sound-desc">${s.desc}</div>
+        <div class="sound-toggle"></div>
+        <div class="volume-control" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()">
+          <span class="volume-icon">🔊</span>
+          <input type="range" class="volume-slider" min="0" max="100" value="50"
+            oninput="onVolumeChange('${s.id}', this.value)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTimerPresets() {
+  const container = document.getElementById('timer-presets');
+  container.innerHTML = TIMER_PRESETS.map(m => `
+    <button class="timer-preset-btn" data-minutes="${m}" onclick="selectTimerPreset(${m})">${m}分钟</button>
+  `).join('');
+}
+
+function updateSoundCard(id) {
+  const card = document.querySelector(`.sound-card[data-sound="${id}"]`);
+  if (!card) return;
+  const isActive = !!activeSounds[id];
+  card.classList.toggle('active', isActive);
+}
+
+function updatePresetButtons() {
+  const activeIds = new Set(Object.keys(activeSounds));
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const preset = PRESETS.find(p => p.id === btn.dataset.preset);
+    if (!preset) return;
+    const allActive = preset.sounds.every(s => activeIds.has(s));
+    btn.classList.toggle('active', allActive);
+  });
+}
+
+function onVolumeChange(id, value) {
+  const vol = value / 100;
+  if (activeSounds[id]) {
+    setVolume(id, vol);
+  }
+}
+
+// ===== Presets =====
+
+function applyPreset(presetId) {
+  const preset = PRESETS.find(p => p.id === presetId);
+  if (!preset) return;
+
+  // If clicking the same active preset, toggle it off
+  if (activePreset === presetId) {
+    Object.keys(activeSounds).forEach(id => stopSound(id, true));
+    setTimeout(() => {
+      SOUNDS.forEach(s => updateSoundCard(s.id));
+      updatePresetButtons();
+    }, 100);
+    activePreset = null;
+    return;
+  }
+
+  // Stop all current sounds immediately
+  Object.keys(activeSounds).forEach(id => stopSound(id, true));
+
+  // Start preset sounds
+  setTimeout(() => {
+    preset.sounds.forEach(id => startSound(id));
+    preset.sounds.forEach(id => updateSoundCard(id));
+    updatePresetButtons();
+  }, 100);
+
+  activePreset = presetId;
+}
+
+// ===== Timer =====
+
+function selectTimerPreset(minutes) {
+  if (timerRunning) return;
+  selectedTimerPreset = minutes;
+  timerDuration = minutes * 60;
+  timerRemaining = timerDuration;
+
+  document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.minutes) === minutes);
+  });
+
+  updateTimerDisplay();
+  document.getElementById('timer-label').textContent = '已选择，点击开始';
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    pauseTimer();
+  } else {
+    startTimer();
+  }
+}
+
+function startTimer() {
+  if (timerRemaining <= 0 && selectedTimerPreset === null) return;
+  if (timerRemaining <= 0) {
+    timerRemaining = timerDuration;
+  }
+  timerEndTime = Date.now() + timerRemaining * 1000;
+  timerRunning = true;
+  document.getElementById('timer-start').textContent = '暂停';
+  document.getElementById('timer-label').textContent = '正在计时...';
+
+  timerInterval = setInterval(() => {
+    const now = Date.now();
+    timerRemaining = Math.max(0, Math.round((timerEndTime - now) / 1000));
+    updateTimerDisplay();
+
+    // Fade out in last 30 seconds
+    if (timerRemaining <= 30 && timerRemaining > 0) {
+      const fadeRatio = timerRemaining / 30;
+      Object.keys(activeSounds).forEach(id => {
+        const sound = activeSounds[id];
+        if (sound && sound.gainNode) {
+          sound.gainNode.gain.value = sound.volume * fadeRatio;
+        }
+      });
+    }
+
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      document.getElementById('timer-start').textContent = '开始';
+      document.getElementById('timer-label').textContent = '时间到，已自动停止';
+
+      // Stop all sounds
+      Object.keys(activeSounds).forEach(id => stopSound(id));
+      setTimeout(() => {
+        SOUNDS.forEach(s => updateSoundCard(s.id));
+        updatePresetButtons();
+      }, 600);
+    }
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  // Save remaining time based on current moment
+  timerRemaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+  document.getElementById('timer-start').textContent = '继续';
+  document.getElementById('timer-label').textContent = '已暂停';
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerRemaining = 0;
+  selectedTimerPreset = null;
+  document.getElementById('timer-start').textContent = '开始';
+  document.getElementById('timer-label').textContent = '选择时长开始';
+  document.getElementById('timer-time').textContent = '--:--';
+  document.querySelectorAll('.timer-preset-btn').forEach(btn => btn.classList.remove('active'));
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(timerRemaining / 60);
+  const secs = timerRemaining % 60;
+  document.getElementById('timer-time').textContent =
+    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// ===== Breathing Guide =====
+
+function toggleBreathing() {
+  if (breathingActive) {
+    stopBreathing();
+  } else {
+    startBreathing();
+  }
+}
+
+function startBreathing() {
+  breathingActive = true;
+  document.getElementById('breath-toggle').textContent = '停止引导';
+  document.getElementById('breath-toggle').classList.add('active');
+  breathCycle();
+}
+
+function stopBreathing() {
+  breathingActive = false;
+  clearTimeout(breathingTimeout);
+  const circle = document.getElementById('breath-circle');
+  circle.className = 'breath-circle';
+  circle.style.transform = 'translate(-50%, -50%) scale(1)';
+  document.getElementById('breath-text').textContent = '点击开始呼吸引导';
+  document.getElementById('breath-toggle').textContent = '开始引导';
+  document.getElementById('breath-toggle').classList.remove('active');
+}
+
+function breathCycle() {
+  if (!breathingActive) return;
+  const circle = document.getElementById('breath-circle');
+  const text = document.getElementById('breath-text');
+
+  // Inhale 4s
+  circle.className = 'breath-circle inhale';
+  text.textContent = '吸气...';
+  breathingTimeout = setTimeout(() => {
+    if (!breathingActive) return;
+    // Hold 7s
+    circle.className = 'breath-circle hold';
+    text.textContent = '屏息...';
+    breathingTimeout = setTimeout(() => {
+      if (!breathingActive) return;
+      // Exhale 8s
+      circle.className = 'breath-circle exhale';
+      text.textContent = '呼气...';
+      breathingTimeout = setTimeout(() => {
+        if (!breathingActive) return;
+        circle.className = 'breath-circle';
+        breathCycle();
+      }, 8000);
+    }, 7000);
+  }, 4000);
+}
+
+// ===== Background Particles =====
+
+function initParticles() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const PARTICLE_COUNT = 50;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 0.5,
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: (Math.random() - 0.5) * 0.2 - 0.1,
+      alpha: Math.random() * 0.3 + 0.05,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Gradient background
+    const grad = ctx.createRadialGradient(
+      canvas.width * 0.5, canvas.height * 0.3, 0,
+      canvas.width * 0.5, canvas.height * 0.3, canvas.height * 0.8
+    );
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(0.5, '#0a0e1a');
+    grad.addColorStop(1, '#050810');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Particles
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
+      ctx.fill();
+
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ===== Playback Controls =====
+
+let isPaused = false;
+let pausedVolumes = {};
+
+function togglePauseAll() {
+  const activeIds = Object.keys(activeSounds);
+  if (activeIds.length === 0) return;
+
+  if (isPaused) {
+    // Resume: restore volumes
+    activeIds.forEach(id => {
+      const sound = activeSounds[id];
+      if (sound && sound.gainNode && pausedVolumes[id] !== undefined) {
+        sound.gainNode.gain.value = pausedVolumes[id];
+      }
+    });
+    pausedVolumes = {};
+    isPaused = false;
+    document.getElementById('pause-icon').textContent = '⏸';
+    document.getElementById('pause-text').textContent = '全部暂停';
+    document.getElementById('pause-btn').classList.remove('paused');
+  } else {
+    // Pause: save volumes then mute via GainNode (don't pause audio to avoid iOS issues)
+    pausedVolumes = {};
+    activeIds.forEach(id => {
+      const sound = activeSounds[id];
+      if (sound && sound.gainNode) {
+        pausedVolumes[id] = sound.gainNode.gain.value;
+        sound.gainNode.gain.value = 0;
+      }
+    });
+    isPaused = true;
+    document.getElementById('pause-icon').textContent = '▶';
+    document.getElementById('pause-text').textContent = '继续播放';
+    document.getElementById('pause-btn').classList.add('paused');
+  }
+}
+
+function resetAll() {
+  // Stop all sounds
+  Object.keys(activeSounds).forEach(id => stopSound(id, true));
+  if (masterAudioElement) masterAudioElement.pause();
+  isPaused = false;
+  activePreset = null;
+  releaseWakeLock();
+
+  // Reset UI
+  setTimeout(() => {
+    SOUNDS.forEach(s => updateSoundCard(s.id));
+    updatePresetButtons();
+    // Reset all volume sliders to 50
+    document.querySelectorAll('.volume-slider').forEach(slider => slider.value = 50);
+    document.getElementById('pause-icon').textContent = '⏸';
+    document.getElementById('pause-text').textContent = '全部暂停';
+    document.getElementById('pause-btn').classList.remove('paused');
+  }, 100);
+}
+
+// ===== Saved Configs =====
+
+const CONFIGS_KEY = 'relax_saved_configs';
+
+function getSavedConfigs() {
+  try {
+    return JSON.parse(localStorage.getItem(CONFIGS_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveConfigsToStorage(configs) {
+  localStorage.setItem(CONFIGS_KEY, JSON.stringify(configs));
+}
+
+let pendingSaveSounds = null;
+let pendingSaveDesc = null;
+
+function saveCurrentConfig() {
+  const activeIds = Object.keys(activeSounds);
+  if (activeIds.length === 0) {
+    showToast('请先开启至少一个声音再保存');
+    return;
+  }
+
+  // Collect current volumes
+  const sounds = {};
+  activeIds.forEach(id => {
+    sounds[id] = activeSounds[id].volume;
+  });
+
+  // Build description from sound names
+  const desc = activeIds.map(id => {
+    const s = SOUNDS.find(s => s.id === id);
+    return s ? s.name : id;
+  }).join(' + ');
+
+  pendingSaveSounds = sounds;
+  pendingSaveDesc = desc;
+
+  // Show modal
+  const input = document.getElementById('config-name-input');
+  input.value = desc;
+  document.getElementById('save-modal').classList.add('active');
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeSaveModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('save-modal').classList.remove('active');
+  pendingSaveSounds = null;
+  pendingSaveDesc = null;
+}
+
+function confirmSaveConfig() {
+  const name = document.getElementById('config-name-input').value.trim();
+  if (!name) return;
+
+  const configs = getSavedConfigs();
+  const existing = configs.findIndex(c => c.name === name);
+
+  const newConfig = {
+    id: existing >= 0 ? configs[existing].id : Date.now().toString(),
+    name: name,
+    sounds: pendingSaveSounds,
+    desc: pendingSaveDesc,
+    createdAt: existing >= 0 ? configs[existing].createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (existing >= 0) {
+    configs[existing] = newConfig;
+  } else {
+    configs.push(newConfig);
+  }
+
+  saveConfigsToStorage(configs);
+  renderConfigs();
+  closeSaveModal();
+  showToast('配置已保存');
+}
+
+// Toast notification (replaces alert)
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('active');
+  setTimeout(() => toast.classList.remove('active'), 2000);
+}
+
+function loadConfig(configId) {
+  const configs = getSavedConfigs();
+  const config = configs.find(c => c.id === configId);
+  if (!config) return;
+
+  // Stop all current sounds
+  Object.keys(activeSounds).forEach(id => stopSound(id, true));
+
+  // Load saved sounds with their volumes
+  setTimeout(() => {
+    Object.entries(config.sounds).forEach(([id, vol]) => {
+      startSound(id);
+    });
+    // After sounds start, apply saved volumes (cancel ongoing fades first)
+    setTimeout(() => {
+      Object.entries(config.sounds).forEach(([id, vol]) => {
+        const sound = activeSounds[id];
+        if (sound && sound.gainNode) {
+          sound.fadeId++; // Cancel the fadeIn from startSound
+          sound.volume = vol;
+          sound.gainNode.gain.value = vol;
+        }
+        // Update volume slider
+        const card = document.querySelector(`.sound-card[data-sound="${id}"]`);
+        if (card) {
+          const slider = card.querySelector('.volume-slider');
+          if (slider) slider.value = Math.round(vol * 100);
+        }
+      });
+      SOUNDS.forEach(s => updateSoundCard(s.id));
+      updatePresetButtons();
+    }, 300);
+  }, 100);
+  activePreset = null;
+}
+
+function deleteConfig(configId) {
+  const configs = getSavedConfigs().filter(c => c.id !== configId);
+  saveConfigsToStorage(configs);
+  renderConfigs();
+}
+
+function renderConfigs() {
+  const list = document.getElementById('configs-list');
+  const configs = getSavedConfigs();
+
+  if (configs.length === 0) {
+    list.innerHTML = '<div class="configs-empty">还没有保存的配置，调整好声音后点击上方保存</div>';
+    return;
+  }
+
+  list.innerHTML = configs.map(c => `
+    <div class="config-item">
+      <div class="config-item-info">
+        <div class="config-item-name">${c.name}</div>
+        <div class="config-item-desc">${c.desc}</div>
+      </div>
+      <div class="config-item-actions">
+        <button class="config-item-btn load" onclick="loadConfig('${c.id}')">加载</button>
+        <button class="config-item-btn delete" onclick="deleteConfig('${c.id}')">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== Init =====
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderPresets();
+  renderSounds();
+  renderConfigs();
+  renderTimerPresets();
+  initParticles();
+
+  // Unlock AudioContext on first user interaction (required for iOS Safari)
+  const unlockAudio = () => {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    // Activate the master <audio> element on first interaction — this is the key
+    // to gaining iOS background audio permission (media session must start from user gesture)
+    if (masterAudioElement && masterAudioElement.paused) {
+      masterAudioElement.play().catch(e => console.log('masterAudioElement unlock:', e));
+    }
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('touchend', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  };
+  document.addEventListener('touchstart', unlockAudio, { passive: true });
+  document.addEventListener('touchend', unlockAudio, { passive: true });
+  document.addEventListener('click', unlockAudio);
+
+  // Handle Enter key in save modal input
+  document.getElementById('config-name-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmSaveConfig();
+  });
+});
+</script>
+</body>
+</html>
