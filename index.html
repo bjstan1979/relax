@@ -419,6 +419,10 @@ body {
   animation: breathIn 4s ease-in-out forwards;
 }
 
+.breath-circle.inhale-resonance {
+  animation: breathInResonance 5s ease-in-out forwards;
+}
+
 .breath-circle.hold {
   animation: none;
   transform: translate(-50%, -50%) scale(3);
@@ -428,12 +432,26 @@ body {
   animation: breathOut 8s ease-in-out forwards;
 }
 
+.breath-circle.exhale-resonance {
+  animation: breathOutResonance 5s ease-in-out forwards;
+}
+
 @keyframes breathIn {
   from { transform: translate(-50%, -50%) scale(1); }
   to { transform: translate(-50%, -50%) scale(3); }
 }
 
+@keyframes breathInResonance {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, -50%) scale(3); }
+}
+
 @keyframes breathOut {
+  from { transform: translate(-50%, -50%) scale(3); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes breathOutResonance {
   from { transform: translate(-50%, -50%) scale(3); }
   to { transform: translate(-50%, -50%) scale(1); }
 }
@@ -667,6 +685,7 @@ body {
   .control-btn { justify-content: center; }
   .config-item { flex-direction: column; align-items: flex-start; gap: 8px; }
   .config-item-actions { margin-left: 0; align-self: flex-end; }
+  .hr-metrics { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ===== Scrollbar ===== */
@@ -767,6 +786,63 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ===== HR Monitor ===== */
+.hr-monitor { margin-bottom: 36px; }
+.hr-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.hr-connect-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 20px; color: var(--text-primary); cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.3s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.hr-connect-btn:hover { border-color: var(--accent); background: var(--bg-card-active); }
+.hr-connect-btn.connected { border-color: var(--success); background: rgba(52,211,153,0.08); }
+.hr-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.hr-metric { text-align: center; }
+.hr-metric-label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+.hr-metric-value { display: block; font-size: 1.2rem; font-weight: 500; color: var(--text-primary); }
+.hr-metric-unit { display: block; font-size: 0.65rem; color: var(--text-muted); }
+#hr-waveform { width: 100%; margin-top: 12px; border-radius: 8px; background: rgba(0,0,0,0.2); }
+.hrv-high { color: var(--success); }
+.hrv-medium { color: var(--warning); }
+.hrv-low { color: #f87171; }
+/* ===== Smart Recommend ===== */
+.smart-recommend { margin-top: 16px; }
+.smart-toggle-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto;
+}
+.smart-toggle-btn:hover { background: var(--bg-card-active); border-color: var(--border-active); }
+.smart-toggle-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.smart-reason {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+.smart-reason-icon { font-size: 1rem; margin-right: 4px; }
+.smart-profile-name {
+  display: block;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 2px;
+}
+/* ===== Breath Mode Toggle ===== */
+.breath-mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
+.breath-mode-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; color: var(--text-muted); cursor: pointer; font-family: inherit; font-size: 0.75rem; transition: all 0.3s ease; }
+.breath-mode-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(139,92,246,0.08); }
+
 /* ===== Animations ===== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -854,14 +930,47 @@ body {
 
   <!-- Breathing Guide -->
   <section class="breathing">
-    <div class="section-title">呼吸引导 · 4-7-8 呼吸法</div>
+    <div class="section-title">呼吸引导 · <span id="breath-mode-label">4-7-8 呼吸法</span></div>
     <div class="breathing-panel">
       <div class="breath-circle-container">
         <div class="breath-ring"></div>
         <div class="breath-circle" id="breath-circle"></div>
       </div>
       <div class="breath-text" id="breath-text">点击开始呼吸引导</div>
+      <div class="breath-mode-toggle">
+        <button class="breath-mode-btn active" id="btn-478" onclick="setBreathMode('478')">4-7-8</button>
+        <button class="breath-mode-btn" id="btn-resonance" onclick="setBreathMode('resonance')">共振呼吸</button>
+      </div>
       <button class="breath-toggle" id="breath-toggle" onclick="toggleBreathing()">开始引导</button>
+    </div>
+  </section>
+
+  <!-- HR Monitor -->
+  <section class="hr-monitor" id="hr-monitor-section">
+    <div class="section-title">心率生物反馈</div>
+    <div class="hr-panel">
+      <button class="hr-connect-btn" id="hr-connect-btn" onclick="toggleHRMonitor()">
+        <span id="hr-connect-icon">💓</span>
+        <span id="hr-connect-text">连接心率带</span>
+      </button>
+      <div class="hr-metrics" id="hr-metrics" style="display:none">
+        <div class="hr-metric"><span class="hr-metric-label">心率</span><span class="hr-metric-value" id="hr-value">--</span><span class="hr-metric-unit">bpm</span></div>
+        <div class="hr-metric"><span class="hr-metric-label">RMSSD</span><span class="hr-metric-value" id="rmssd-value">--</span><span class="hr-metric-unit">ms</span></div>
+        <div class="hr-metric"><span class="hr-metric-label">SDNN</span><span class="hr-metric-value" id="sdnn-value">--</span><span class="hr-metric-unit">ms</span></div>
+        <div class="hr-metric"><span class="hr-metric-label">状态</span><span class="hr-metric-value" id="hrv-level-value">--</span></div>
+      </div>
+      <canvas id="hr-waveform" width="400" height="80" style="display:none"></canvas>
+      <div class="smart-recommend" id="smart-recommend" style="display:none">
+        <button class="smart-toggle-btn" id="smart-toggle-btn" onclick="toggleSmartMode()">
+          <span id="smart-toggle-icon">🧠</span>
+          <span id="smart-toggle-text">智能推荐</span>
+        </button>
+        <div class="smart-reason" id="smart-reason" style="display:none">
+          <span class="smart-reason-icon" id="smart-reason-icon"></span>
+          <span class="smart-reason-text" id="smart-reason-text"></span>
+          <span class="smart-profile-name" id="smart-profile-name"></span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -897,6 +1006,66 @@ const PRESETS = [
 
 const TIMER_PRESETS = [5, 10, 15, 20, 30, 60];
 
+// ===== HRV-Driven Smart Sound Profiles =====
+const HRV_PROFILES = [
+  {
+    id: 'deep-calm',
+    name: '深度放松',
+    reason: '检测到紧张状态 → 推荐深度放松组合',
+    icon: '🌙',
+    condition: { hrvLevel: 'low', hrRange: [70, 200] },
+    sounds: { delta: 0.6, rain: 0.5, bowl: 0.4 }
+  },
+  {
+    id: 'gentle-calm',
+    name: '温和放松',
+    reason: '轻度紧张 → 温和舒缓',
+    icon: '🌧️',
+    condition: { hrvLevel: 'low', hrRange: [30, 70] },
+    sounds: { delta: 0.4, ocean: 0.5, rain: 0.3 }
+  },
+  {
+    id: 'transition-calm',
+    name: '过渡放松',
+    reason: '过渡状态 → 引导放松',
+    icon: '🌊',
+    condition: { hrvLevel: 'medium', hrRange: [30, 70] },
+    sounds: { alpha: 0.5, ocean: 0.4, wind: 0.3 }
+  },
+  {
+    id: 'focus-calm',
+    name: '平静专注',
+    reason: '紧张但需保持清醒 → 平静专注',
+    icon: '🎯',
+    condition: { hrvLevel: 'medium', hrRange: [70, 200] },
+    sounds: { beta: 0.4, whitenoise: 0.3, stream: 0.3 }
+  },
+  {
+    id: 'maintain-relax',
+    name: '保持放松',
+    reason: '深度放松 → 维持当前状态',
+    icon: '🧘',
+    condition: { hrvLevel: 'high', hrRange: [50, 80] },
+    sounds: { theta: 0.5, bowl: 0.5, stream: 0.3 }
+  },
+  {
+    id: 'gentle-awaken',
+    name: '温和唤醒',
+    reason: '心率偏低 → 温和唤醒',
+    icon: '🐦',
+    condition: { hrvLevel: 'high', hrRange: [30, 50] },
+    sounds: { birds: 0.4, alpha: 0.4, stream: 0.3 }
+  },
+  {
+    id: 'deep-meditation',
+    name: '深度冥想',
+    reason: '共振呼吸同步 → 深度冥想组合',
+    icon: '🔮',
+    condition: { hrvLevel: 'high', hrRange: [50, 80], breathMode: 'resonance' },
+    sounds: { theta: 0.5, bowl: 0.4, gamma: 0.25 }
+  }
+];
+
 // ===== State =====
 let activeSounds = {};
 let timerInterval = null;
@@ -909,6 +1078,528 @@ let breathingActive = false;
 let breathingTimeout = null;
 let activePreset = null;
 let wakeLock = null; // Wake Lock sentinel
+
+// ===== HR Monitor State =====
+let hrMonitorDevice = null;
+let hrMonitorChar = null;
+let hrMonitorConnected = false;
+let hrvState = { rrBuffer: [], heartRate: 0, rmssd: 0, sdnn: 0, hrvLevel: 'none', lastUpdate: 0 };
+let hrvModulationTimer = null;
+let breathMode = '478'; // '478' or 'resonance'
+let hrWaveformData = []; // for waveform canvas
+
+// ===== Smart Recommend State =====
+let smartModeActive = false;
+let smartCurrentProfileId = null;
+let smartLastSwitchTime = 0;
+let smartRecommendTimer = null;
+let smartManualOverrideUntil = 0;
+let previousHrvLevel = 'none';
+const SMART_COOLDOWN_MS = 60000;
+const SMART_LEVEL_CHANGE_COOLDOWN_MS = 30000;
+const SMART_MIN_SWITCH_GAP_MS = 10000;
+
+// ===== HR Monitor (Web Bluetooth + Polar H10) =====
+
+async function toggleHRMonitor() {
+  if (hrMonitorConnected) {
+    disconnectHRMonitor();
+  } else {
+    await connectHRMonitor();
+  }
+}
+
+async function connectHRMonitor() {
+  if (!navigator.bluetooth) {
+    showToast('此浏览器不支持 Web Bluetooth，请在 Chrome 中打开');
+    return;
+  }
+  try {
+    const btn = document.getElementById('hr-connect-btn');
+    btn.disabled = true;
+    document.getElementById('hr-connect-text').textContent = '连接中...';
+
+    hrMonitorDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ services: ['heart_rate'] }]
+    });
+
+    const server = await hrMonitorDevice.gatt.connect();
+    const service = await server.getPrimaryService('heart_rate');
+    hrMonitorChar = await service.getCharacteristic('heart_rate_measurement');
+    await hrMonitorChar.startNotifications();
+    hrMonitorChar.addEventListener('characteristicvaluechanged', onHRNotification);
+
+    hrMonitorDevice.addEventListener('gattserverdisconnected', () => {
+      disconnectHRMonitor();
+    });
+
+    hrMonitorConnected = true;
+    btn.disabled = false;
+    btn.classList.add('connected');
+    document.getElementById('hr-connect-icon').textContent = '💚';
+    document.getElementById('hr-connect-text').textContent = '已连接 · 断开';
+    document.getElementById('hr-metrics').style.display = '';
+    document.getElementById('hr-waveform').style.display = '';
+    document.getElementById('smart-recommend').style.display = '';
+
+    // Start HRV modulation
+    hrvModulationTimer = setInterval(hrvAudioModulation, 2000);
+
+    showToast('心率带已连接');
+  } catch (err) {
+    console.warn('HR monitor connect failed:', err);
+    const btn = document.getElementById('hr-connect-btn');
+    btn.disabled = false;
+    document.getElementById('hr-connect-text').textContent = '连接心率带';
+    if (err.name !== 'NotFoundError') showToast('连接失败: ' + err.message);
+  }
+}
+
+function disconnectHRMonitor() {
+  if (hrMonitorDevice && hrMonitorDevice.gatt.connected) {
+    hrMonitorDevice.gatt.disconnect();
+  }
+  hrMonitorDevice = null;
+  hrMonitorChar = null;
+  hrMonitorConnected = false;
+  hrvState = { rrBuffer: [], heartRate: 0, rmssd: 0, sdnn: 0, hrvLevel: 'none', lastUpdate: 0 };
+  hrWaveformData = [];
+
+  if (hrvModulationTimer) { clearInterval(hrvModulationTimer); hrvModulationTimer = null; }
+
+  // Disable smart mode on disconnect
+  if (smartModeActive) disableSmartMode();
+
+  // Restore all active sounds to user-set volume
+  Object.keys(activeSounds).forEach(id => {
+    const sound = activeSounds[id];
+    if (sound && sound.gainNode) {
+      fadeGain(sound, sound.gainNode.gain.value, sound.volume, 1000);
+    }
+  });
+
+  const btn = document.getElementById('hr-connect-btn');
+  if (btn) btn.classList.remove('connected');
+  const iconEl = document.getElementById('hr-connect-icon');
+  if (iconEl) iconEl.textContent = '💓';
+  const textEl = document.getElementById('hr-connect-text');
+  if (textEl) textEl.textContent = '连接心率带';
+  const metricsEl = document.getElementById('hr-metrics');
+  if (metricsEl) metricsEl.style.display = 'none';
+  const waveEl = document.getElementById('hr-waveform');
+  if (waveEl) waveEl.style.display = 'none';
+  const smartEl = document.getElementById('smart-recommend');
+  if (smartEl) smartEl.style.display = 'none';
+  const hrEl = document.getElementById('hr-value');
+  if (hrEl) hrEl.textContent = '--';
+  const rmssdEl = document.getElementById('rmssd-value');
+  if (rmssdEl) rmssdEl.textContent = '--';
+  const sdnnEl = document.getElementById('sdnn-value');
+  if (sdnnEl) sdnnEl.textContent = '--';
+  const levelEl = document.getElementById('hrv-level-value');
+  if (levelEl) { levelEl.textContent = '--'; levelEl.className = 'hr-metric-value'; }
+}
+
+function onHRNotification(event) {
+  if (!hrMonitorConnected) return;
+  const dataView = event.target.value;
+  const { heartRate, rrIntervals } = parseHeartRateMeasurement(dataView);
+
+  hrvState.heartRate = heartRate;
+
+  // Push RR intervals to buffer with outlier filtering
+  // Reject RR values that differ >20% from the median of recent buffer
+  const now = Date.now();
+  const recentRrs = hrvState.rrBuffer.slice(-10).map(item => item.rr);
+  const median = recentRrs.length > 0 ? recentRrs.sort((a, b) => a - b)[Math.floor(recentRrs.length / 2)] : 0;
+  for (const rr of rrIntervals) {
+    // Also reject physiologically impossible values (<300ms or >2000ms)
+    if (rr < 300 || rr > 2000) continue;
+    if (median > 0 && Math.abs(rr - median) / median > 0.2) continue;
+    hrvState.rrBuffer.push({ rr, time: now });
+  }
+
+  // Trim buffer to last 60 seconds
+  const cutoff = now - 60000;
+  hrvState.rrBuffer = hrvState.rrBuffer.filter(item => item.time > cutoff);
+
+  // Update HRV metrics every 5 seconds
+  if (now - hrvState.lastUpdate > 5000) {
+    updateHRVMetrics();
+    hrvState.lastUpdate = now;
+  }
+
+  // Update HR display
+  document.getElementById('hr-value').textContent = heartRate;
+
+  // Push to waveform data
+  hrWaveformData.push({ time: now, hr: heartRate });
+  if (hrWaveformData.length > 600) hrWaveformData = hrWaveformData.slice(-600);
+  drawHRWaveform();
+}
+
+function parseHeartRateMeasurement(dataView) {
+  const flags = dataView.getUint8(0);
+  const hrFormat16 = flags & 0x01; // bit 0: 0=UINT8, 1=UINT16
+  const heartRate = hrFormat16 ? dataView.getUint16(1, true) : dataView.getUint8(1);
+
+  const rrPresent = flags & 0x10; // bit 4
+  const rrIntervals = [];
+  if (rrPresent) {
+    let offset = hrFormat16 ? 3 : 2;
+    while (offset + 1 < dataView.byteLength) {
+      // RR-Interval in 1/1024 seconds, convert to ms
+      rrIntervals.push(dataView.getUint16(offset, true) * 1000 / 1024);
+      offset += 2;
+    }
+  }
+  return { heartRate, rrIntervals };
+}
+
+// ===== HRV Computation =====
+
+function updateHRVMetrics() {
+  const rrs = hrvState.rrBuffer.map(item => item.rr);
+  if (rrs.length < 4) return;
+
+  previousHrvLevel = hrvState.hrvLevel;
+  hrvState.rmssd = calculateRMSSD(rrs);
+  hrvState.sdnn = calculateSDNN(rrs);
+  hrvState.hrvLevel = getHRVLevel(hrvState.rmssd);
+
+  document.getElementById('rmssd-value').textContent = Math.round(hrvState.rmssd);
+  document.getElementById('sdnn-value').textContent = Math.round(hrvState.sdnn);
+
+  const levelEl = document.getElementById('hrv-level-value');
+  const levels = { high: '放松', medium: '过渡', low: '紧张' };
+  levelEl.textContent = levels[hrvState.hrvLevel] || '--';
+  levelEl.className = 'hr-metric-value hrv-' + hrvState.hrvLevel;
+
+  // Smart mode: trigger immediate recommendation on HRV level change
+  if (smartModeActive && hrvState.hrvLevel !== previousHrvLevel) {
+    if (Date.now() - smartLastSwitchTime > SMART_MIN_SWITCH_GAP_MS) {
+      smartRecommendTick();
+    }
+  }
+}
+
+function calculateRMSSD(rrIntervals) {
+  if (rrIntervals.length < 2) return 0;
+  let sumSq = 0;
+  for (let i = 1; i < rrIntervals.length; i++) {
+    const diff = rrIntervals[i] - rrIntervals[i - 1];
+    sumSq += diff * diff;
+  }
+  return Math.sqrt(sumSq / (rrIntervals.length - 1));
+}
+
+function calculateSDNN(rrIntervals) {
+  if (rrIntervals.length < 2) return 0;
+  const mean = rrIntervals.reduce((a, b) => a + b, 0) / rrIntervals.length;
+  const variance = rrIntervals.reduce((sum, rr) => sum + (rr - mean) ** 2, 0) / rrIntervals.length;
+  return Math.sqrt(variance);
+}
+
+function getHRVLevel(rmssd) {
+  if (rmssd > 50) return 'high';
+  if (rmssd > 20) return 'medium';
+  return 'low';
+}
+
+// ===== HRV Sound Modulation =====
+
+function hrvAudioModulation() {
+  if (!hrMonitorConnected || hrvState.hrvLevel === 'none') return;
+  if (isPaused) return;
+  if (smartModeActive) return; // Smart mode handles its own volume
+  // Don't interfere with timer fade-out (last 30 seconds)
+  if (timerRunning && timerRemaining <= 30) return;
+  const activeIds = Object.keys(activeSounds);
+  if (activeIds.length === 0) return;
+
+  // Medium HRV — no modulation needed
+  if (hrvState.hrvLevel === 'medium') return;
+
+  const modulationFactor = hrvState.hrvLevel === 'high' ? 0.05 : -0.05;
+
+  activeIds.forEach(id => {
+    const sound = activeSounds[id];
+    if (!sound || !sound.gainNode) return;
+    const targetVol = sound.volume * (1 + modulationFactor);
+    const clampedVol = Math.max(0, Math.min(1, targetVol));
+    fadeGain(sound, sound.gainNode.gain.value, clampedVol, 1500);
+  });
+}
+
+// ===== Smart Sound Recommendation =====
+
+function getRecommendedProfile() {
+  if (!hrMonitorConnected || hrvState.hrvLevel === 'none') return null;
+  const hr = hrvState.heartRate || 70; // Default to 70 if HR not yet received
+  const hrvLevel = hrvState.hrvLevel;
+
+  // First pass: match with all conditions (most specific)
+  for (const profile of HRV_PROFILES) {
+    const c = profile.condition;
+    if (c.hrvLevel !== hrvLevel) continue;
+    if (hr < c.hrRange[0] || hr > c.hrRange[1]) continue;
+    if (c.breathMode && c.breathMode !== breathMode) continue;
+    return profile;
+  }
+
+  // Fallback: match HRV level only, ignore HR range
+  for (const profile of HRV_PROFILES) {
+    const c = profile.condition;
+    if (c.hrvLevel !== hrvLevel) continue;
+    if (c.breathMode && c.breathMode !== breathMode) continue;
+    return profile;
+  }
+
+  return null;
+}
+
+function smartRecommendTick() {
+  if (!smartModeActive) return;
+  if (!hrMonitorConnected || hrvState.hrvLevel === 'none') return;
+  if (isPaused) return;
+  if (timerRunning && timerRemaining <= 30) return;
+  if (Date.now() < smartManualOverrideUntil) return;
+
+  const profile = getRecommendedProfile();
+  if (!profile) return;
+  if (profile.id === smartCurrentProfileId) return;
+
+  const now = Date.now();
+  const timeSinceSwitch = now - smartLastSwitchTime;
+
+  // Determine cooldown based on whether HRV level changed
+  let cooldown = SMART_COOLDOWN_MS;
+  const prevProfile = HRV_PROFILES.find(p => p.id === smartCurrentProfileId);
+  if (prevProfile && prevProfile.condition.hrvLevel !== profile.condition.hrvLevel) {
+    cooldown = SMART_LEVEL_CHANGE_COOLDOWN_MS;
+  }
+
+  if (timeSinceSwitch < cooldown && smartCurrentProfileId !== null) return;
+
+  executeSmartTransition(profile);
+  smartCurrentProfileId = profile.id;
+  smartLastSwitchTime = now;
+  updateSmartUI(profile);
+}
+
+function executeSmartTransition(profile) {
+  const targetSounds = profile.sounds;
+  const currentIds = new Set(Object.keys(activeSounds));
+  const targetIds = new Set(Object.keys(targetSounds));
+
+  const toStop = [...currentIds].filter(id => !targetIds.has(id));
+  const toStart = [...targetIds].filter(id => !currentIds.has(id));
+  const toAdjust = [...currentIds].filter(id => targetIds.has(id));
+
+  // 1. Fade out sounds that should stop
+  toStop.forEach(id => stopSound(id));
+
+  // 2. Start new sounds with profile-specific volumes
+  toStart.forEach(id => {
+    const targetVol = targetSounds[id];
+    startSoundWithVolume(id, targetVol);
+  });
+
+  // 3. Adjust volumes for sounds that remain
+  toAdjust.forEach(id => {
+    const sound = activeSounds[id];
+    const targetVol = targetSounds[id];
+    if (!sound || !sound.gainNode) return;
+    const currentVol = sound.gainNode.gain.value;
+    if (Math.abs(currentVol - targetVol) > 0.05) {
+      sound.volume = targetVol;
+      fadeGain(sound, currentVol, targetVol, 1500);
+    }
+  });
+
+  // 4. Update UI after a delay for async startSound to complete
+  setTimeout(() => {
+    SOUNDS.forEach(s => {
+      updateSoundCard(s.id);
+      const card = document.querySelector(`.sound-card[data-sound="${s.id}"]`);
+      if (card) {
+        const slider = card.querySelector('.volume-slider');
+        if (slider && activeSounds[s.id]) {
+          slider.value = Math.round(activeSounds[s.id].volume * 100);
+        }
+      }
+    });
+    updatePresetButtons();
+    activePreset = null;
+  }, 1200);
+}
+
+// Start a sound and set its volume to a specific target (instead of default 0.5)
+function startSoundWithVolume(id, targetVol) {
+  if (activeSounds[id]) return;
+
+  const sound = { gainNode: null, source: null, volume: targetVol, fadeId: 0, playing: false };
+  activeSounds[id] = sound;
+
+  ensureAudioCtxRunning().then(() => loadAudioBuffer(id)).then(buffer => {
+    // Sound may have been stopped while loading
+    if (!activeSounds[id] || activeSounds[id] !== sound) return;
+
+    const ctx = getAudioCtx();
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0; // start silent for fade-in
+    gainNode.connect(masterStreamDest);
+    sound.gainNode = gainNode;
+
+    playBufferLoop(sound, buffer);
+    sound.playing = true;
+
+    // Fade in to the profile's target volume, not default 0.5
+    fadeGain(sound, 0, targetVol, 1000);
+    // Ensure the master <audio> element is playing (holds iOS media session)
+    if (masterAudioElement && masterAudioElement.paused) {
+      masterAudioElement.play().catch(e => console.log('masterAudioElement play:', e));
+    }
+    requestWakeLock();
+    updateMediaSession();
+    updateSoundCard(id);
+  }).catch(err => {
+    console.warn(`Failed to start ${id}:`, err);
+    delete activeSounds[id];
+    updateSoundCard(id);
+  });
+}
+
+// ===== Smart Mode Controls =====
+
+function enableSmartMode() {
+  smartModeActive = true;
+  smartCurrentProfileId = null;
+  smartLastSwitchTime = 0;
+  smartManualOverrideUntil = 0;
+
+  smartRecommendTimer = setInterval(smartRecommendTick, 30000);
+  smartRecommendTick();
+
+  updateSmartToggleUI();
+  showToast('智能推荐已开启');
+}
+
+function disableSmartMode() {
+  smartModeActive = false;
+  smartCurrentProfileId = null;
+
+  if (smartRecommendTimer) {
+    clearInterval(smartRecommendTimer);
+    smartRecommendTimer = null;
+  }
+
+  updateSmartToggleUI();
+  updateSmartReasonUI(null);
+  showToast('智能推荐已关闭');
+}
+
+function toggleSmartMode() {
+  if (!hrMonitorConnected || hrvState.hrvLevel === 'none') {
+    showToast('请先连接心率带');
+    return;
+  }
+  if (smartModeActive) {
+    disableSmartMode();
+  } else {
+    enableSmartMode();
+  }
+}
+
+function updateSmartToggleUI() {
+  const btn = document.getElementById('smart-toggle-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', smartModeActive);
+  document.getElementById('smart-toggle-text').textContent =
+    smartModeActive ? '智能推荐中' : '智能推荐';
+}
+
+function updateSmartReasonUI(profile) {
+  const reasonEl = document.getElementById('smart-reason');
+  if (!reasonEl) return;
+
+  if (!profile || !smartModeActive) {
+    reasonEl.style.display = 'none';
+    return;
+  }
+
+  reasonEl.style.display = '';
+  document.getElementById('smart-reason-icon').textContent = profile.icon;
+  document.getElementById('smart-reason-text').textContent = profile.reason;
+  document.getElementById('smart-profile-name').textContent = profile.name;
+}
+
+function updateSmartUI(profile) {
+  updateSmartToggleUI();
+  updateSmartReasonUI(profile);
+}
+
+function drawHRWaveform() {
+  const canvas = document.getElementById('hr-waveform');
+  if (!canvas || canvas.style.display === 'none') return;
+
+  // Responsive canvas: match internal resolution to display size
+  const displayWidth = canvas.clientWidth;
+  if (displayWidth > 0 && canvas.width !== displayWidth) {
+    canvas.width = displayWidth;
+  }
+
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (hrWaveformData.length < 2) return;
+
+  const now = Date.now();
+  const windowMs = 30000;
+  const data = hrWaveformData.filter(d => d.time > now - windowMs);
+  if (data.length < 2) return;
+
+  const hrs = data.map(d => d.hr);
+  const minHr = Math.min(...hrs), maxHr = Math.max(...hrs);
+  const range = Math.max(maxHr - minHr, 10);
+
+  ctx.beginPath();
+  // Waveform color syncs with HRV state
+  const strokeColor = (hrMonitorConnected && hrvState.hrvLevel === 'high') ? '#34d399' :
+                      (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? '#fbbf24' : '#8b5cf6';
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < data.length; i++) {
+    const x = ((data[i].time - data[0].time) / windowMs) * w;
+    const y = h - ((data[i].hr - minHr) / range) * (h - 10) - 5;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Gradient fill
+  const lastX = ((data[data.length-1].time - data[0].time) / windowMs) * w;
+  ctx.lineTo(lastX, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  const fillColor = (hrMonitorConnected && hrvState.hrvLevel === 'high') ? 'rgba(52,211,153,0.15)' :
+                    (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? 'rgba(251,191,36,0.15)' : 'rgba(139,92,246,0.15)';
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, fillColor);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+// ===== Breath Mode Toggle =====
+
+function setBreathMode(mode) {
+  breathMode = mode;
+  document.getElementById('btn-478').classList.toggle('active', mode === '478');
+  document.getElementById('btn-resonance').classList.toggle('active', mode === 'resonance');
+  document.getElementById('breath-mode-label').textContent = mode === '478' ? '4-7-8 呼吸法' : '共振呼吸';
+  if (breathingActive) { stopBreathing(); startBreathing(); }
+}
 
 // ===== Wake Lock (keeps screen on during playback) =====
 
@@ -1167,6 +1858,8 @@ function toggleSound(id) {
       if (!stillMatches) activePreset = null;
     }
   }
+  // Smart mode: manual override pauses auto-recommend for 5 minutes
+  if (smartModeActive) smartManualOverrideUntil = Date.now() + 300000;
 }
 
 // ===== UI Rendering =====
@@ -1230,6 +1923,7 @@ function onVolumeChange(id, value) {
   if (activeSounds[id]) {
     setVolume(id, vol);
   }
+  if (smartModeActive) smartManualOverrideUntil = Date.now() + 300000;
 }
 
 // ===== Presets =====
@@ -1260,6 +1954,8 @@ function applyPreset(presetId) {
   }, 100);
 
   activePreset = presetId;
+  // Smart mode: manual preset selection pauses auto-recommend for 5 minutes
+  if (smartModeActive) smartManualOverrideUntil = Date.now() + 300000;
 }
 
 // ===== Timer =====
@@ -1376,8 +2072,12 @@ function stopBreathing() {
   breathingActive = false;
   clearTimeout(breathingTimeout);
   const circle = document.getElementById('breath-circle');
+  const ring = document.querySelector('.breath-ring');
   circle.className = 'breath-circle';
   circle.style.transform = 'translate(-50%, -50%) scale(1)';
+  circle.style.background = '';
+  circle.style.borderColor = '';
+  if (ring) ring.style.borderColor = '';
   document.getElementById('breath-text').textContent = '点击开始呼吸引导';
   document.getElementById('breath-toggle').textContent = '开始引导';
   document.getElementById('breath-toggle').classList.remove('active');
@@ -1385,6 +2085,10 @@ function stopBreathing() {
 
 function breathCycle() {
   if (!breathingActive) return;
+  if (breathMode === 'resonance') {
+    breathCycleResonance();
+    return;
+  }
   const circle = document.getElementById('breath-circle');
   const text = document.getElementById('breath-text');
 
@@ -1408,6 +2112,59 @@ function breathCycle() {
       }, 8000);
     }, 7000);
   }, 4000);
+}
+
+// ===== Resonance Breathing (5s inhale + 5s exhale, ~6 breaths/min) =====
+
+function breathCycleResonance() {
+  if (!breathingActive) return;
+  const circle = document.getElementById('breath-circle');
+  const text = document.getElementById('breath-text');
+  const ring = document.querySelector('.breath-ring');
+
+  // Inhale 5s
+  circle.className = 'breath-circle inhale-resonance';
+  updateBreathCircleColor(circle, ring, 'inhale');
+  text.textContent = '吸气...';
+  breathingTimeout = setTimeout(() => {
+    if (!breathingActive) return;
+    // Exhale 5s
+    circle.className = 'breath-circle exhale-resonance';
+    updateBreathCircleColor(circle, ring, 'exhale');
+    text.textContent = '呼气...';
+    breathingTimeout = setTimeout(() => {
+      if (!breathingActive) return;
+      circle.className = 'breath-circle';
+      breathCycleResonance();
+    }, 5000);
+  }, 5000);
+}
+
+// Sync breath circle color with HRV state
+function updateBreathCircleColor(circle, ring, phase) {
+  if (!hrMonitorConnected || hrvState.hrvLevel === 'none') {
+    // No HR monitor — default purple
+    circle.style.background = 'radial-gradient(circle, rgba(139,92,246,0.6), rgba(139,92,246,0.1))';
+    circle.style.borderColor = 'rgba(139,92,246,0.3)';
+    if (ring) ring.style.borderColor = 'rgba(139,92,246,0.15)';
+    return;
+  }
+  // Detect HR-breath sync: if HRV is high and we're in resonance mode, show green
+  const isSynced = hrvState.hrvLevel === 'high' && breathMode === 'resonance';
+  if (isSynced) {
+    circle.style.background = 'radial-gradient(circle, rgba(52,211,153,0.6), rgba(52,211,153,0.1))';
+    circle.style.borderColor = 'rgba(52,211,153,0.4)';
+    if (ring) ring.style.borderColor = 'rgba(52,211,153,0.3)';
+  } else if (hrvState.hrvLevel === 'medium') {
+    circle.style.background = 'radial-gradient(circle, rgba(251,191,36,0.5), rgba(251,191,36,0.1))';
+    circle.style.borderColor = 'rgba(251,191,36,0.3)';
+    if (ring) ring.style.borderColor = 'rgba(251,191,36,0.2)';
+  } else {
+    // Low HRV — purple/cool tone
+    circle.style.background = 'radial-gradient(circle, rgba(139,92,246,0.5), rgba(99,102,241,0.1))';
+    circle.style.borderColor = 'rgba(139,92,246,0.3)';
+    if (ring) ring.style.borderColor = 'rgba(139,92,246,0.15)';
+  }
 }
 
 // ===== Background Particles =====
@@ -1450,15 +2207,31 @@ function initParticles() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // HRV-driven particle color and speed
+    let pColorR = 139, pColorG = 92, pColorB = 246;
+    let speedMul = 1;
+    if (hrMonitorConnected && hrvState.hrvLevel !== 'none') {
+      if (hrvState.hrvLevel === 'high') {
+        pColorR = 52; pColorG = 211; pColorB = 153; // green — relaxed
+        speedMul = 0.7; // slower, calmer
+      } else if (hrvState.hrvLevel === 'medium') {
+        pColorR = 251; pColorG = 191; pColorB = 36; // amber — transitional
+        speedMul = 1;
+      } else {
+        pColorR = 139; pColorG = 92; pColorB = 246; // purple — stressed
+        speedMul = 1.3; // slightly faster
+      }
+    }
+
     // Particles
     particles.forEach(p => {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
+      ctx.fillStyle = `rgba(${pColorR}, ${pColorG}, ${pColorB}, ${p.alpha})`;
       ctx.fill();
 
-      p.x += p.dx;
-      p.y += p.dy;
+      p.x += p.dx * speedMul;
+      p.y += p.dy * speedMul;
 
       if (p.x < 0) p.x = canvas.width;
       if (p.x > canvas.width) p.x = 0;
@@ -1516,6 +2289,7 @@ function resetAll() {
   if (masterAudioElement) masterAudioElement.pause();
   isPaused = false;
   activePreset = null;
+  if (smartModeActive) disableSmartMode();
   releaseWakeLock();
 
   // Reset UI
@@ -1700,6 +2474,16 @@ document.addEventListener('DOMContentLoaded', () => {
   renderConfigs();
   renderTimerPresets();
   initParticles();
+
+  // iOS / unsupported browser fallback for Web Bluetooth
+  if (!navigator.bluetooth) {
+    const hrSection = document.getElementById('hr-monitor-section');
+    if (hrSection) {
+      hrSection.innerHTML = '<div class="section-title">心率生物反馈</div>' +
+        '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">' +
+        '此浏览器不支持 Web Bluetooth<br>请在 Chrome 或 Edge 中打开，或在 iOS 上使用 BLE Link App</div>';
+    }
+  }
 
   // Unlock AudioContext on first user interaction (required for iOS Safari)
   const unlockAudio = () => {
