@@ -4,48 +4,118 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>静心 · 声音疗愈</title>
+<meta name="description" content="聆听内在，回归平静 — 声音疗愈与冥想应用">
+<meta property="og:title" content="静心 · 声音疗愈">
+<meta property="og:description" content="聆听内在，回归平静">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a1a14">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ===== Reset & Base ===== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #111827;
-  --bg-card: rgba(255,255,255,0.04);
-  --bg-card-active: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.08);
-  --border-active: rgba(139,92,246,0.4);
+  --bg-primary: #0f2a1e;
+  --bg-secondary: #142e24;
+  --bg-card: rgba(255,255,255,0.035);
+  --bg-card-active: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.07);
+  --border-active: rgba(45,212,160,0.35);
   --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139,92,246,0.3);
-  --accent2: #6366f1;
+  --accent: #2dd4a0;
+  --accent-glow: rgba(45,212,160,0.2);
+  --accent2: #14b8a6;
   --success: #34d399;
   --warning: #fbbf24;
   --radius: 16px;
   --radius-sm: 10px;
+  --radius-xl: 24px;
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-inner: inset 0 1px 0 rgba(255,255,255,0.06);
+  --shadow-diffuse: 0 20px 40px -15px rgba(0,0,0,0.3);
+  --shadow-accent: 0 0 30px rgba(45,212,160,0.08);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-html { font-size: 16px; }
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'Outfit', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===== Background ===== */
+#bg-image {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -2;
+  pointer-events: none;
+  background: url('images/steam-ethereal.png') center center / cover no-repeat;
+  opacity: 0.35;
+}
+
+/* Noise texture overlay */
+#bg-image::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -2;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+#bg-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10,26,20,0.7) 0%, rgba(10,26,20,0.3) 30%, rgba(10,26,20,0.5) 70%, rgba(10,26,20,0.85) 100%);
+}
+
 #bg-canvas {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   z-index: 0;
   pointer-events: none;
+}
+
+/* Ambient gradient orb - slow moving */
+#bg-orb {
+  position: fixed;
+  top: -30%; left: -20%;
+  width: 70%; height: 70%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,212,160,0.04) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: orbDrift 25s ease-in-out infinite alternate;
+}
+
+@keyframes orbDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30%, 20%) scale(1.1); }
+  100% { transform: translate(10%, 40%) scale(0.95); }
 }
 
 .app-container {
@@ -58,41 +128,81 @@ body {
 
 /* ===== Header ===== */
 .header {
-  text-align: center;
-  padding: 40px 0 32px;
+  padding: 56px 0 48px;
+  position: relative;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 20px;
+  width: 120px;
+  height: 120px;
+  background: url('images/lotus-line.png') center center / cover no-repeat;
+  opacity: 0.5;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 12px rgba(45,212,160,0.15));
 }
 
 .header h1 {
-  font-size: 2rem;
+  font-size: 2.4rem;
+  font-weight: 200;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.header h1 span {
+  color: var(--accent);
   font-weight: 300;
-  letter-spacing: 0.15em;
-  background: linear-gradient(135deg, #c4b5fd, #8b5cf6, #6366f1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .header p {
   color: var(--text-muted);
   font-size: 0.875rem;
-  margin-top: 8px;
-  letter-spacing: 0.05em;
+  margin-top: 10px;
+  letter-spacing: 0.04em;
+  font-weight: 300;
+}
+
+.header-accent-line {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  margin-top: 16px;
+  border-radius: 1px;
+  opacity: 0.6;
 }
 
 /* ===== Section Title ===== */
 .section-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.08em;
   margin-bottom: 16px;
   padding-left: 4px;
+  text-transform: uppercase;
 }
 
 /* ===== Preset Scenes ===== */
 .presets {
-  margin-bottom: 36px;
+  margin-bottom: 44px;
+  position: relative;
+}
+
+.presets::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  bottom: -30px;
+  width: 80px;
+  height: 80px;
+  background: url('images/bamboo-mist.png') center center / cover no-repeat;
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .presets-grid {
@@ -103,33 +213,53 @@ body {
 
 .preset-btn {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 14px 16px;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--ease-out-expo);
   text-align: left;
   font-family: inherit;
   font-size: 0.875rem;
+  box-shadow: var(--glass-inner);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .preset-btn:hover {
   background: var(--bg-card-active);
   border-color: var(--border-active);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--glass-inner), 0 8px 20px -8px rgba(0,0,0,0.2);
+}
+
+.preset-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.preset-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .preset-btn.active {
   background: var(--bg-card-active);
-  border-color: var(--accent);
-  box-shadow: 0 0 20px var(--accent-glow);
+  border-color: rgba(45,212,160,0.3);
+  box-shadow: var(--glass-inner), var(--shadow-accent);
 }
 
 .preset-btn .preset-icon {
-  font-size: 1.4rem;
+  font-size: 0;
   display: block;
   margin-bottom: 6px;
+  width: 24px;
+  height: 24px;
+}
+
+.preset-btn .preset-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .preset-btn .preset-name {
@@ -146,7 +276,7 @@ body {
 
 /* ===== Sound Cards ===== */
 .sounds {
-  margin-bottom: 36px;
+  margin-bottom: 44px;
 }
 
 .sounds-grid {
@@ -157,14 +287,17 @@ body {
 
 .sound-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.35s var(--ease-out-expo);
   user-select: none;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--glass-inner);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .sound-card::before {
@@ -178,18 +311,30 @@ body {
 }
 
 .sound-card:hover {
-  border-color: rgba(255,255,255,0.12);
-  transform: translateY(-2px);
+  background: var(--bg-card-active);
+  transform: translateY(-3px);
+  box-shadow: var(--glass-inner), var(--shadow-diffuse);
+}
+
+.sound-card:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.sound-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .sound-card.active {
   background: var(--bg-card-active);
-  border-color: var(--accent);
-  box-shadow: 0 0 24px var(--accent-glow);
+  border-color: rgba(45,212,160,0.3);
+  box-shadow: var(--glass-inner), var(--shadow-accent), 0 0 60px rgba(45,212,160,0.06);
 }
 
 .sound-card.active::before {
   opacity: 1;
+  background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%), url('images/soundwave-flow.png') center center / cover no-repeat;
+  opacity: 0.25;
 }
 
 .sound-card .card-content {
@@ -198,9 +343,16 @@ body {
 }
 
 .sound-icon {
-  font-size: 1.6rem;
+  font-size: 0;
   margin-bottom: 10px;
   display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.sound-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 .sound-name {
@@ -221,8 +373,9 @@ body {
   background: rgba(255,255,255,0.1);
   border-radius: 11px;
   position: relative;
-  transition: background 0.3s ease;
+  transition: background 0.35s var(--ease-out-expo);
   margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .sound-card.active .sound-toggle {
@@ -235,8 +388,9 @@ body {
   width: 18px; height: 18px;
   border-radius: 50%;
   background: white;
-  top: 2px; left: 2px;
-  transition: transform 0.3s ease;
+  top: 1px; left: 1px;
+  transition: transform 0.35s var(--ease-spring);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .sound-card.active .sound-toggle::after {
@@ -256,9 +410,16 @@ body {
 }
 
 .volume-icon {
-  font-size: 0.75rem;
+  font-size: 0;
   color: var(--text-muted);
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.volume-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .volume-slider {
@@ -278,7 +439,12 @@ body {
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
-  box-shadow: 0 0 6px var(--accent-glow);
+  box-shadow: 0 0 8px var(--accent-glow), 0 0 2px rgba(45,212,160,0.4);
+  transition: transform 0.2s var(--ease-out-expo);
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 .volume-slider::-moz-range-thumb {
@@ -295,10 +461,30 @@ body {
 }
 
 .timer-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--glass-inner), var(--shadow-diffuse);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.timer-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url('images/forest-twilight.png') center center / cover no-repeat;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.timer-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .timer-display {
@@ -307,11 +493,12 @@ body {
 }
 
 .timer-time {
-  font-size: 3rem;
+  font-size: 3.2rem;
   font-weight: 200;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
+  text-shadow: 0 0 40px rgba(45,212,160,0.08);
 }
 
 .timer-label {
@@ -330,14 +517,14 @@ body {
 
 .timer-preset-btn {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 6px 16px;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.8rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .timer-preset-btn:hover {
@@ -348,7 +535,7 @@ body {
 .timer-preset-btn.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: white;
+  color: #0a1a14;
 }
 
 .timer-controls {
@@ -359,42 +546,78 @@ body {
 
 .timer-btn {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 10px 28px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
+  box-shadow: var(--glass-inner);
 }
 
 .timer-btn:hover {
   background: rgba(255,255,255,0.1);
 }
 
+.timer-btn:active {
+  transform: scale(0.97);
+}
+
+.timer-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .timer-btn.primary {
   background: var(--accent);
   border-color: var(--accent);
+  color: #0a1a14;
+  font-weight: 500;
+  box-shadow: 0 0 20px rgba(45,212,160,0.15);
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .timer-btn.primary:hover {
-  background: #7c3aed;
+  background: #26c494;
+  box-shadow: 0 0 30px rgba(45,212,160,0.25);
+  transform: translateY(-1px);
 }
 
 /* ===== Breathing Guide ===== */
 .breathing {
-  margin-bottom: 36px;
+  margin-bottom: 52px;
 }
 
 .breathing-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 32px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--glass-inner), var(--shadow-diffuse);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.breathing-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url('images/ripple-water.png') center center / cover no-repeat;
+  opacity: 0.25;
+  z-index: 0;
+}
+
+.breathing-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .breath-circle-container {
@@ -409,8 +632,9 @@ body {
   top: 50%; left: 50%;
   width: 60px; height: 60px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.4), rgba(99,102,241,0.1));
-  border: 2px solid rgba(139,92,246,0.3);
+  background: radial-gradient(circle, rgba(45,212,160,0.4), rgba(20,184,166,0.1));
+  border: 2px solid rgba(45,212,160,0.3);
+  box-shadow: 0 0 30px rgba(45,212,160,0.15), inset 0 0 20px rgba(45,212,160,0.1);
   transform: translate(-50%, -50%) scale(1);
   transition: none;
 }
@@ -461,8 +685,9 @@ body {
   top: 50%; left: 50%;
   width: 180px; height: 180px;
   border-radius: 50%;
-  border: 1px solid rgba(139,92,246,0.15);
+  border: 1px solid rgba(45,212,160,0.15);
   transform: translate(-50%, -50%);
+  box-shadow: 0 0 40px rgba(45,212,160,0.04);
 }
 
 .breath-text {
@@ -476,23 +701,222 @@ body {
 
 .breath-toggle {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 10px 28px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
+  box-shadow: var(--glass-inner);
 }
 
 .breath-toggle:hover {
   background: rgba(255,255,255,0.1);
 }
 
+.breath-toggle:active {
+  transform: scale(0.97);
+}
+
+.breath-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ===== Breathing Guide Config ===== */
+.breath-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.breath-config-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+.breath-freq-btn, .breath-ratio-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 3px 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.7rem;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.breath-freq-btn:active, .breath-ratio-btn:active { transform: scale(0.96); }
+.breath-freq-btn:focus-visible, .breath-ratio-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.breath-freq-btn.active, .breath-ratio-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(45,212,160,0.08);
+}
+.breath-audio-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-top: 2px;
+}
+.breath-audio-toggle input { accent-color: var(--accent); }
+
+/* ===== Resonance Test ===== */
+.resonance-test-panel {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+}
+.resonance-test-panel.visible { display: block; }
+.resonance-test-btn {
+  background: rgba(45,212,160,0.1);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 6px 18px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.resonance-test-btn:hover { background: rgba(45,212,160,0.2); }
+.resonance-test-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.resonance-test-status {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+.resonance-progress {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 6px;
+}
+.resonance-progress-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.resonance-progress-dot.active { background: var(--accent); }
+.resonance-progress-dot.done { background: rgba(45,212,160,0.4); }
+.resonance-result {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(45,212,160,0.05);
+  border: 1px solid rgba(45,212,160,0.2);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  display: none;
+}
+.resonance-result.visible { display: block; }
+.resonance-result strong { color: var(--accent); }
+
+/* ===== Practice Report ===== */
+.practice-report-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.practice-report-overlay.visible { display: flex; }
+.practice-report {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.practice-report h3 {
+  color: var(--accent);
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+}
+.practice-report-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.practice-report-metric {
+  text-align: center;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.03);
+}
+.practice-report-metric .label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.practice-report-metric .value {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.practice-report-metric .unit {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.practice-report-close {
+  background: var(--accent);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 24px;
+  color: #0a1a14;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+/* ===== Trend Chart ===== */
+.trend-section {
+  display: none;
+  margin-top: 12px;
+}
+.trend-section.visible { display: block; }
+.trend-chart-container {
+  position: relative;
+  height: 200px;
+  margin-top: 8px;
+}
+.trend-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 4px 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.trend-toggle-btn:hover { background: rgba(255,255,255,0.06); }
+.trend-toggle-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(45,212,160,0.08); }
+
 .breath-toggle.active {
   background: var(--accent);
   border-color: var(--accent);
+  color: #0a1a14;
+  box-shadow: 0 0 20px rgba(45,212,160,0.2);
 }
 
 /* ===== Playback Controls ===== */
@@ -500,7 +924,7 @@ body {
   display: flex;
   gap: 12px;
   justify-content: center;
-  margin-bottom: 36px;
+  margin-bottom: 44px;
 }
 
 .control-btn {
@@ -508,14 +932,17 @@ body {
   align-items: center;
   gap: 8px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 12px 28px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.9rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
+  box-shadow: var(--glass-inner);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .control-btn:hover {
@@ -523,9 +950,19 @@ body {
   border-color: var(--border-active);
 }
 
+.control-btn:active {
+  transform: scale(0.97);
+}
+
+.control-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .control-btn.pause-btn.paused {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: rgba(45,212,160,0.1);
+  border-color: rgba(45,212,160,0.3);
+  box-shadow: var(--glass-inner), 0 0 16px rgba(45,212,160,0.1);
 }
 
 .control-btn.reset-btn:hover {
@@ -534,19 +971,46 @@ body {
 }
 
 .control-icon {
-  font-size: 1.1rem;
+  font-size: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.control-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ===== Saved Configs ===== */
 .configs {
-  margin-bottom: 36px;
+  margin-bottom: 48px;
 }
 
 .configs-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--glass-inner), var(--shadow-diffuse);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.configs-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 200px; height: 100%;
+  background: url('images/forest-twilight.png') center center / cover no-repeat;
+  opacity: 0.12;
+  z-index: 0;
+}
+
+.configs-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .configs-actions {
@@ -555,27 +1019,40 @@ body {
 
 .config-btn {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 8px 20px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .config-btn:hover {
   background: rgba(255,255,255,0.1);
 }
 
+.config-btn:active {
+  transform: scale(0.97);
+}
+
+.config-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .config-btn.primary {
   background: var(--accent);
   border-color: var(--accent);
+  color: #0a1a14;
+  font-weight: 500;
+  box-shadow: 0 0 16px rgba(45,212,160,0.12);
 }
 
 .config-btn.primary:hover {
-  background: #7c3aed;
+  background: #26c494;
+  box-shadow: 0 0 24px rgba(45,212,160,0.2);
 }
 
 .configs-list {
@@ -589,10 +1066,10 @@ body {
   align-items: center;
   justify-content: space-between;
   background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .config-item:hover {
@@ -628,14 +1105,14 @@ body {
 
 .config-item-btn {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 4px 12px;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.75rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .config-item-btn:hover {
@@ -643,10 +1120,19 @@ body {
   color: var(--text-primary);
 }
 
+.config-item-btn:active {
+  transform: scale(0.96);
+}
+
+.config-item-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .config-item-btn.load:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: white;
+  color: #0a1a14;
 }
 
 .config-item-btn.delete:hover {
@@ -664,16 +1150,20 @@ body {
 
 /* ===== Footer ===== */
 .footer {
-  text-align: center;
-  padding: 20px 0;
+  padding: 40px 0 24px;
   color: var(--text-muted);
   font-size: 0.75rem;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 24px;
+  letter-spacing: 0.02em;
+  text-align: center;
 }
 
 /* ===== Responsive ===== */
 @media (max-width: 640px) {
   .app-container { padding: 16px 14px 60px; }
   .header h1 { font-size: 1.5rem; }
+  .header::before { width: 80px; height: 80px; top: 10px; right: -10px; }
   .presets-grid { grid-template-columns: repeat(2, 1fr); }
   .sounds-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .sound-card { padding: 14px; }
@@ -686,13 +1176,18 @@ body {
   .config-item { flex-direction: column; align-items: flex-start; gap: 8px; }
   .config-item-actions { margin-left: 0; align-self: flex-end; }
   .hr-metrics { grid-template-columns: repeat(2, 1fr); }
+  .breathing-panel { padding: 24px; }
+  .timer-panel { padding: 20px; }
 }
 
 /* ===== Scrollbar ===== */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ===== Selection ===== */
+::selection { background: rgba(45,212,160,0.2); color: #e2e8f0; }
 
 /* ===== Save Modal ===== */
 .modal-overlay {
@@ -700,7 +1195,9 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   justify-content: center;
   align-items: center;
@@ -711,12 +1208,15 @@ body {
 }
 
 .modal {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
+  background: rgba(20,46,36,0.95);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
   width: 90%;
   max-width: 360px;
+  box-shadow: var(--glass-inner), 0 25px 50px -12px rgba(0,0,0,0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .modal-title {
@@ -728,7 +1228,7 @@ body {
 .modal-input {
   width: 100%;
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   color: var(--text-primary);
@@ -736,10 +1236,12 @@ body {
   font-size: 0.9rem;
   outline: none;
   margin-bottom: 16px;
+  transition: border-color 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo);
 }
 
 .modal-input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .modal-actions {
@@ -750,18 +1252,22 @@ body {
 
 .modal-btn {
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   padding: 8px 20px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.85rem;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .modal-btn.confirm {
   background: var(--accent);
   border-color: var(--accent);
+  color: #0a1a14;
+  font-weight: 500;
+  box-shadow: 0 0 12px rgba(45,212,160,0.15);
 }
 
 /* ===== Toast ===== */
@@ -771,14 +1277,16 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: var(--accent);
-  color: white;
-  padding: 10px 24px;
-  border-radius: 20px;
+  color: #0a1a14;
+  padding: 10px 28px;
+  border-radius: 24px;
   font-size: 0.85rem;
+  font-weight: 500;
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: all 0.4s var(--ease-spring);
   z-index: 200;
   pointer-events: none;
+  box-shadow: 0 8px 24px rgba(45,212,160,0.2);
 }
 
 .toast.active {
@@ -787,10 +1295,14 @@ body {
 }
 
 /* ===== HR Monitor ===== */
-.hr-monitor { margin-bottom: 36px; }
-.hr-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-.hr-connect-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 20px; color: var(--text-primary); cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.3s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.hr-monitor { margin-bottom: 48px; }
+.hr-panel { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 24px; position: relative; overflow: hidden; box-shadow: var(--glass-inner), var(--shadow-diffuse); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.hr-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('images/zen-garden-top.png') center center / cover no-repeat; opacity: 0.15; z-index: 0; }
+.hr-panel > * { position: relative; z-index: 1; }
+.hr-connect-btn { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 12px 20px; color: var(--text-primary); cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.3s var(--ease-out-expo); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--glass-inner); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .hr-connect-btn:hover { border-color: var(--accent); background: var(--bg-card-active); }
+.hr-connect-btn:active { transform: scale(0.98); }
+.hr-connect-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hr-connect-btn.connected { border-color: var(--success); background: rgba(52,211,153,0.08); }
 .hr-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
 .hr-metric { text-align: center; }
@@ -805,33 +1317,50 @@ body {
 .smart-recommend { margin-top: 16px; }
 .smart-toggle-btn {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
   padding: 8px 20px;
   color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.85rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--ease-out-expo);
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0 auto;
+  box-shadow: var(--glass-inner);
 }
 .smart-toggle-btn:hover { background: var(--bg-card-active); border-color: var(--border-active); }
-.smart-toggle-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.smart-toggle-btn:active { transform: scale(0.97); }
+.smart-toggle-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.smart-toggle-btn.active { background: var(--accent); border-color: var(--accent); color: #0a1a14; }
 .smart-reason {
   margin-top: 12px;
-  padding: 10px 16px;
-  background: rgba(139,92,246,0.06);
-  border: 1px solid rgba(139,92,246,0.15);
+  padding: 12px 18px;
+  background: rgba(45,212,160,0.04);
+  border: 1px solid rgba(45,212,160,0.12);
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   color: var(--text-secondary);
   text-align: center;
   line-height: 1.5;
+  box-shadow: inset 0 1px 0 rgba(45,212,160,0.06);
 }
-.smart-reason-icon { font-size: 1rem; margin-right: 4px; }
+/* ===== HRV Record Controls ===== */
+.hr-record-controls { display: flex; gap: 10px; margin-top: 16px; align-items: center; justify-content: center; }
+.hr-record-btn { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 10px 20px; color: var(--text-primary); cursor: pointer; font-family: inherit; font-size: 0.85rem; transition: all 0.3s var(--ease-out-expo); box-shadow: var(--glass-inner); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.hr-record-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--bg-card-active); }
+.hr-record-btn:active:not(:disabled) { transform: scale(0.97); }
+.hr-record-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hr-record-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hr-record-btn.recording { border-color: #f59e0b; background: rgba(245,158,11,0.08); color: #f59e0b; animation: record-pulse 2s ease-in-out infinite; }
+.hr-record-stop-btn { border-color: rgba(239,68,68,0.3); }
+.hr-record-stop-btn:hover:not(:disabled) { border-color: #ef4444; background: rgba(239,68,68,0.08); color: #ef4444; }
+.hr-record-status { font-size: 0.75rem; color: var(--text-muted); margin-left: 8px; }
+@keyframes record-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+.smart-reason-icon { font-size: 0; margin-right: 4px; width: 16px; height: 16px; display: inline-block; vertical-align: middle; }
+.smart-reason-icon svg { width: 16px; height: 16px; }
 .smart-profile-name {
   display: block;
   color: var(--accent);
@@ -840,29 +1369,80 @@ body {
 }
 /* ===== Breath Mode Toggle ===== */
 .breath-mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
-.breath-mode-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; color: var(--text-muted); cursor: pointer; font-family: inherit; font-size: 0.75rem; transition: all 0.3s ease; }
-.breath-mode-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(139,92,246,0.08); }
+.breath-mode-btn { background: transparent; border: 1px solid var(--glass-border); border-radius: 20px; padding: 4px 14px; color: var(--text-muted); cursor: pointer; font-family: inherit; font-size: 0.75rem; transition: all 0.3s var(--ease-out-expo); }
+.breath-mode-btn:active { transform: scale(0.96); }
+.breath-mode-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.breath-mode-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(45,212,160,0.08); }
 
 /* ===== Animations ===== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.presets-grid, .sounds-grid, .timer-panel, .breathing-panel {
-  animation: fadeIn 0.5s ease-out;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes breatheGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(45,212,160,0.08); }
+  50% { box-shadow: 0 0 40px rgba(45,212,160,0.15), 0 0 80px rgba(45,212,160,0.05); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.presets-grid, .sounds-grid, .timer-panel, .breathing-panel, .configs-panel {
+  animation: fadeInUp 0.6s var(--ease-out-expo) both;
+}
+
+/* Staggered children */
+.presets-grid { animation-delay: 0.1s; }
+.sounds-grid { animation-delay: 0.2s; }
+.timer-panel { animation-delay: 0.3s; }
+.breathing-panel { animation-delay: 0.4s; }
+.configs-panel { animation-delay: 0.5s; }
+
+/* Breathing glow on active sound cards */
+.sound-card.active {
+  animation: breatheGlow 4s ease-in-out infinite;
+}
+
+/* Scroll reveal for sections */
+.presets, .sounds, .timer, .breathing, .configs, .hr-monitor {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+}
+
+.presets.revealed, .sounds.revealed, .timer.revealed, .breathing.revealed, .configs.revealed, .hr-monitor.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </style>
 </head>
 <body>
 
+<div id="bg-image"></div>
+<div id="bg-overlay"></div>
+<div id="bg-orb"></div>
 <canvas id="bg-canvas"></canvas>
 
 <div class="app-container">
   <!-- Header -->
   <header class="header">
-    <h1>静心 · 声音疗愈</h1>
+    <h1>静心 <span>·</span> 声音疗愈</h1>
     <p>聆听内在，回归平静</p>
+    <div class="header-accent-line"></div>
   </header>
 
   <!-- Preset Scenes -->
@@ -880,11 +1460,11 @@ body {
   <!-- Playback Controls -->
   <section class="playback-controls">
     <button class="control-btn pause-btn" id="pause-btn" onclick="togglePauseAll()">
-      <span class="control-icon" id="pause-icon">⏸</span>
+      <span class="control-icon" id="pause-icon"></span>
       <span id="pause-text">全部暂停</span>
     </button>
     <button class="control-btn reset-btn" onclick="resetAll()">
-      <span class="control-icon">↺</span>
+      <span class="control-icon" id="reset-icon"></span>
       <span>全部复位</span>
     </button>
   </section>
@@ -940,7 +1520,41 @@ body {
       <div class="breath-mode-toggle">
         <button class="breath-mode-btn active" id="btn-478" onclick="setBreathMode('478')">4-7-8</button>
         <button class="breath-mode-btn" id="btn-resonance" onclick="setBreathMode('resonance')">共振呼吸</button>
+        <button class="breath-mode-btn" id="btn-resonance-test" onclick="setBreathMode('resonance-test')">频率测定</button>
       </div>
+
+      <!-- Breathing Config (visible in resonance mode) -->
+      <div class="breath-config" id="breath-config" style="display:none">
+        <span class="breath-config-label">频率:</span>
+        <button class="breath-freq-btn" data-freq="7.0" onclick="setBreathFreq(7.0)">7.0</button>
+        <button class="breath-freq-btn" data-freq="6.5" onclick="setBreathFreq(6.5)">6.5</button>
+        <button class="breath-freq-btn active" data-freq="6.0" onclick="setBreathFreq(6.0)">6.0</button>
+        <button class="breath-freq-btn" data-freq="5.5" onclick="setBreathFreq(5.5)">5.5</button>
+        <button class="breath-freq-btn" data-freq="5.0" onclick="setBreathFreq(5.0)">5.0</button>
+        <span class="breath-config-label" style="margin-left:6px">吸呼比:</span>
+        <button class="breath-ratio-btn active" data-ratio="1:1" onclick="setBreathRatio('1:1')">1:1</button>
+        <button class="breath-ratio-btn" data-ratio="1:1.5" onclick="setBreathRatio('1:1.5')">1:1.5</button>
+        <label class="breath-audio-toggle">
+          <input type="checkbox" id="breath-audio-check" onchange="toggleBreathAudio()"> 🔔 提示音
+        </label>
+      </div>
+
+      <!-- Resonance Test Panel -->
+      <div class="resonance-test-panel" id="resonance-test-panel">
+        <div style="text-align:center">
+          <button class="resonance-test-btn" id="resonance-test-start-btn" onclick="startResonanceTest()">🔬 开始共振频率测定</button>
+        </div>
+        <div class="resonance-test-status" id="resonance-test-status">测定将自动切换5种频率，每种2分钟，间隔30秒</div>
+        <div class="resonance-progress" id="resonance-progress">
+          <div class="resonance-progress-dot" data-idx="0"></div>
+          <div class="resonance-progress-dot" data-idx="1"></div>
+          <div class="resonance-progress-dot" data-idx="2"></div>
+          <div class="resonance-progress-dot" data-idx="3"></div>
+          <div class="resonance-progress-dot" data-idx="4"></div>
+        </div>
+        <div class="resonance-result" id="resonance-result"></div>
+      </div>
+
       <button class="breath-toggle" id="breath-toggle" onclick="toggleBreathing()">开始引导</button>
     </div>
   </section>
@@ -950,7 +1564,7 @@ body {
     <div class="section-title">心率生物反馈</div>
     <div class="hr-panel">
       <button class="hr-connect-btn" id="hr-connect-btn" onclick="toggleHRMonitor()">
-        <span id="hr-connect-icon">💓</span>
+        <span id="hr-connect-icon"></span>
         <span id="hr-connect-text">连接心率带</span>
       </button>
       <div class="hr-metrics" id="hr-metrics" style="display:none">
@@ -959,10 +1573,15 @@ body {
         <div class="hr-metric"><span class="hr-metric-label">SDNN</span><span class="hr-metric-value" id="sdnn-value">--</span><span class="hr-metric-unit">ms</span></div>
         <div class="hr-metric"><span class="hr-metric-label">状态</span><span class="hr-metric-value" id="hrv-level-value">--</span></div>
       </div>
+      <div class="hr-record-controls" id="hr-record-controls" style="display:none">
+        <button class="hr-record-btn" id="hr-record-start-btn" onclick="startHRVRecording()">开始记录</button>
+        <button class="hr-record-btn hr-record-stop-btn" id="hr-record-stop-btn" onclick="stopHRVRecording()" disabled>结束记录</button>
+        <span class="hr-record-status" id="hr-record-status"></span>
+      </div>
       <canvas id="hr-waveform" width="400" height="80" style="display:none"></canvas>
       <div class="smart-recommend" id="smart-recommend" style="display:none">
         <button class="smart-toggle-btn" id="smart-toggle-btn" onclick="toggleSmartMode()">
-          <span id="smart-toggle-icon">🧠</span>
+          <span id="smart-toggle-icon"></span>
           <span id="smart-toggle-text">智能推荐</span>
         </button>
         <div class="smart-reason" id="smart-reason" style="display:none">
@@ -971,8 +1590,27 @@ body {
           <span class="smart-profile-name" id="smart-profile-name"></span>
         </div>
       </div>
+      <!-- Trend Chart -->
+      <div style="margin-top:12px;text-align:center">
+        <button class="trend-toggle-btn" id="trend-toggle-btn" onclick="toggleTrendChart()">📈 RMSSD趋势</button>
+      </div>
+      <div class="trend-section" id="trend-section">
+        <div class="trend-chart-container">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- Practice Report Overlay -->
+  <div class="practice-report-overlay" id="practice-report-overlay">
+    <div class="practice-report">
+      <h3>📋 练习报告</h3>
+      <div class="practice-report-metrics" id="practice-report-metrics"></div>
+      <div id="practice-report-detail" style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px"></div>
+      <button class="practice-report-close" onclick="closePracticeReport()">关闭</button>
+    </div>
+  </div>
 
   <footer class="footer">
     静心 · 声音疗愈 — 用声音拥抱宁静
@@ -980,28 +1618,63 @@ body {
 </div>
 
 <script>
+// ===== SVG Icons =====
+const ICONS = {
+  theta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4-4-1.8-4-4z" opacity=".5"/><path d="M10 9.5c.5-.8 1.2-1.5 2-1.5s1.5.7 2 1.5"/></svg>',
+  alpha: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L5 21"/><path d="M12 3l7 18"/><path d="M8 15h8"/></svg>',
+  delta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L4 20h16L12 3z"/></svg>',
+  beta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity=".4"/><circle cx="12" cy="12" r="10" opacity=".15"/></svg>',
+  gamma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 8v6"/><path d="M5 5l4.5 4.5M14.5 14.5L19 19"/><path d="M19 5l-4.5 4.5M9.5 14.5L5 19"/></svg>',
+  bowl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c0 4.97 4.03 9 9 9s9-4.03 9-9H3z"/><path d="M8 8c0-1 .5-2 1.5-2s1.5 1 1.5 2" opacity=".5"/><path d="M13 6c0-1 .5-2 1.5-2s1.5 1 1.5 2" opacity=".5"/></svg>',
+  rain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0116 0"/><path d="M8 18v2"/><path d="M12 17v3"/><path d="M16 18v2"/><path d="M6 10c0-3.3 2.7-6 6-6s6 2.7 6 6" opacity=".4"/></svg>',
+  ocean: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0" opacity=".4"/></svg>',
+  whitenoise: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" opacity=".2"/><circle cx="12" cy="12" r="6" opacity=".4"/><circle cx="12" cy="12" r="2"/></svg>',
+  birds: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10c-3-2-6 0-6 3"/><path d="M16 10c3-2 6 0 6 3"/><path d="M8 10c0-3 2-6 4-6s4 3 4 6"/><path d="M10 14h4"/><circle cx="10" cy="11" r=".5" fill="currentColor"/><circle cx="14" cy="11" r=".5" fill="currentColor"/></svg>',
+  stream: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8c3-2 6 0 9-2s6 0 9-2"/><path d="M3 13c3-2 6 0 9-2s6 0 9-2"/><path d="M3 18c3-2 6 0 9-2s6 0 9-2"/></svg>',
+  wind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h12a3 3 0 100-3"/><path d="M3 12h15a3 3 0 110 3"/><path d="M3 16h9a3 3 0 110 3"/></svg>',
+  meditate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M8 14l-3 3"/><path d="M16 14l3 3"/></svg>',
+  sleep: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>',
+  focus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>',
+  nature: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8"/><path d="M5 12H2a10 10 0 0020 0h-3"/><path d="M8 8a4 4 0 018 0" opacity=".5"/></svg>',
+  healing: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>',
+  volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14" opacity=".5"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l15 8-15 8V4z"/></svg>',
+  reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9"/><path d="M3 3v6h6"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>',
+  heartPulse: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>',
+  brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a6 6 0 00-6 6c0 1.66.68 3.16 1.76 4.24L12 16l4.24-3.76A5.98 5.98 0 0018 8a6 6 0 00-6-6z"/><path d="M12 16v6"/><path d="M8 20h8"/><path d="M9 8h.01"/><path d="M15 8h.01"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>',
+  cloudRain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0116 0"/><path d="M8 18v2"/><path d="M12 17v3"/><path d="M16 18v2"/></svg>',
+  waves: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>',
+  target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+  lotus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c-4-2-8-6-8-10 0-3 2-5 4-6 1.5-.7 3-.5 4 .5 1-1 2.5-1.2 4-.5 2 1 4 3 4 6 0 4-4 8-8 10z"/><path d="M12 6v16"/></svg>',
+  crystal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l6 8-6 12-6-12 6-8z"/><path d="M6 10h12"/></svg>',
+  leaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg>',
+};
+
 // ===== Sound Definitions =====
 const SOUNDS = [
-  { id: 'theta',   name: 'θ 波',     desc: '深度放松 · 冥想',     icon: '🧘' },
-  { id: 'alpha',   name: 'α 波',     desc: '放松清醒 · 创意',     icon: '✨' },
-  { id: 'delta',   name: 'δ 波',     desc: '深度睡眠 · 疗愈',     icon: '🌙' },
-  { id: 'beta',    name: 'β 波',     desc: '平静专注 · 清晰',     icon: '🎯' },
-  { id: 'gamma',   name: 'γ 波',     desc: '高级冥想 · 洞察',     icon: '🔮' },
-  { id: 'bowl',    name: '颂钵',     desc: '共鸣 · 深层疗愈',     icon: '🪷' },
-  { id: 'rain',    name: '雨声',     desc: '淅沥 · 安宁',         icon: '🌧️' },
-  { id: 'ocean',   name: '海浪',     desc: '潮涌 · 释放',         icon: '🌊' },
-  { id: 'whitenoise', name: '白噪音', desc: '均匀 · 屏蔽',        icon: '☁️' },
-  { id: 'birds',   name: '森林鸟鸣', desc: '晨光 · 生机',         icon: '🐦' },
-  { id: 'stream',  name: '溪流',     desc: '潺潺 · 流动',         icon: '💧' },
-  { id: 'wind',    name: '风声',     desc: '轻拂 · 自由',         icon: '🍃' },
+  { id: 'theta',   name: 'θ 波',     desc: '深度放松 · 冥想',     icon: 'theta' },
+  { id: 'alpha',   name: 'α 波',     desc: '放松清醒 · 创意',     icon: 'alpha' },
+  { id: 'delta',   name: 'δ 波',     desc: '深度睡眠 · 疗愈',     icon: 'delta' },
+  { id: 'beta',    name: 'β 波',     desc: '平静专注 · 清晰',     icon: 'beta' },
+  { id: 'gamma',   name: 'γ 波',     desc: '高级冥想 · 洞察',     icon: 'gamma' },
+  { id: 'bowl',    name: '颂钵',     desc: '共鸣 · 深层疗愈',     icon: 'bowl' },
+  { id: 'rain',    name: '雨声',     desc: '淅沥 · 安宁',         icon: 'rain' },
+  { id: 'ocean',   name: '海浪',     desc: '潮涌 · 释放',         icon: 'ocean' },
+  { id: 'whitenoise', name: '白噪音', desc: '均匀 · 屏蔽',        icon: 'whitenoise' },
+  { id: 'birds',   name: '森林鸟鸣', desc: '晨光 · 生机',         icon: 'birds' },
+  { id: 'stream',  name: '溪流',     desc: '潺潺 · 流动',         icon: 'stream' },
+  { id: 'wind',    name: '风声',     desc: '轻拂 · 自由',         icon: 'wind' },
 ];
 
 const PRESETS = [
-  { id: 'meditate', name: '深度冥想', desc: 'θ波 + 颂钵',     icon: '🧘', sounds: ['theta', 'bowl'] },
-  { id: 'sleep',    name: '睡眠辅助', desc: 'δ波 + 雨声',      icon: '😴', sounds: ['delta', 'rain'] },
-  { id: 'focus',    name: '专注工作', desc: 'α波 + 白噪音',    icon: '🎯', sounds: ['alpha', 'whitenoise'] },
-  { id: 'nature',   name: '自然放松', desc: '海浪 + 鸟鸣',     icon: '🌿', sounds: ['ocean', 'birds'] },
-  { id: 'healing',  name: '疗愈时刻', desc: '颂钵 + 溪流',     icon: '💖', sounds: ['bowl', 'stream'] },
+  { id: 'meditate', name: '深度冥想', desc: 'θ波 + 颂钵',     icon: 'meditate', sounds: ['theta', 'bowl'] },
+  { id: 'sleep',    name: '睡眠辅助', desc: 'δ波 + 雨声',      icon: 'sleep', sounds: ['delta', 'rain'] },
+  { id: 'focus',    name: '专注工作', desc: 'α波 + 白噪音',    icon: 'focus', sounds: ['alpha', 'whitenoise'] },
+  { id: 'nature',   name: '自然放松', desc: '海浪 + 鸟鸣',     icon: 'nature', sounds: ['ocean', 'birds'] },
+  { id: 'healing',  name: '疗愈时刻', desc: '颂钵 + 溪流',     icon: 'healing', sounds: ['bowl', 'stream'] },
 ];
 
 const TIMER_PRESETS = [5, 10, 15, 20, 30, 60];
@@ -1012,7 +1685,7 @@ const HRV_PROFILES = [
     id: 'deep-calm',
     name: '深度放松',
     reason: '检测到紧张状态 → 推荐深度放松组合',
-    icon: '🌙',
+    icon: 'moon',
     condition: { hrvLevel: 'low', hrRange: [70, 200] },
     sounds: { delta: 0.6, rain: 0.5, bowl: 0.4 }
   },
@@ -1020,7 +1693,7 @@ const HRV_PROFILES = [
     id: 'gentle-calm',
     name: '温和放松',
     reason: '轻度紧张 → 温和舒缓',
-    icon: '🌧️',
+    icon: 'cloudRain',
     condition: { hrvLevel: 'low', hrRange: [30, 70] },
     sounds: { delta: 0.4, ocean: 0.5, rain: 0.3 }
   },
@@ -1028,7 +1701,7 @@ const HRV_PROFILES = [
     id: 'transition-calm',
     name: '过渡放松',
     reason: '过渡状态 → 引导放松',
-    icon: '🌊',
+    icon: 'waves',
     condition: { hrvLevel: 'medium', hrRange: [30, 70] },
     sounds: { alpha: 0.5, ocean: 0.4, wind: 0.3 }
   },
@@ -1036,7 +1709,7 @@ const HRV_PROFILES = [
     id: 'focus-calm',
     name: '平静专注',
     reason: '紧张但需保持清醒 → 平静专注',
-    icon: '🎯',
+    icon: 'target',
     condition: { hrvLevel: 'medium', hrRange: [70, 200] },
     sounds: { beta: 0.4, whitenoise: 0.3, stream: 0.3 }
   },
@@ -1044,7 +1717,7 @@ const HRV_PROFILES = [
     id: 'maintain-relax',
     name: '保持放松',
     reason: '深度放松 → 维持当前状态',
-    icon: '🧘',
+    icon: 'meditate',
     condition: { hrvLevel: 'high', hrRange: [50, 80] },
     sounds: { theta: 0.5, bowl: 0.5, stream: 0.3 }
   },
@@ -1052,7 +1725,7 @@ const HRV_PROFILES = [
     id: 'gentle-awaken',
     name: '温和唤醒',
     reason: '心率偏低 → 温和唤醒',
-    icon: '🐦',
+    icon: 'birds',
     condition: { hrvLevel: 'high', hrRange: [30, 50] },
     sounds: { birds: 0.4, alpha: 0.4, stream: 0.3 }
   },
@@ -1060,7 +1733,7 @@ const HRV_PROFILES = [
     id: 'deep-meditation',
     name: '深度冥想',
     reason: '共振呼吸同步 → 深度冥想组合',
-    icon: '🔮',
+    icon: 'crystal',
     condition: { hrvLevel: 'high', hrRange: [50, 80], breathMode: 'resonance' },
     sounds: { theta: 0.5, bowl: 0.4, gamma: 0.25 }
   }
@@ -1085,7 +1758,13 @@ let hrMonitorChar = null;
 let hrMonitorConnected = false;
 let hrvState = { rrBuffer: [], heartRate: 0, rmssd: 0, sdnn: 0, hrvLevel: 'none', lastUpdate: 0 };
 let hrvModulationTimer = null;
-let breathMode = '478'; // '478' or 'resonance'
+let breathMode = '478'; // '478' or 'resonance' or 'resonance-test'
+let breathFreq = 6.0; // breaths per minute for resonance mode
+let breathRatio = '1:1'; // '1:1' or '1:1.5'
+let breathAudioEnabled = false;
+let breathAudioCtx = null;
+let resonanceTestState = null; // null or { phase, freqIdx, timer, hrvData, ... }
+let trendChart = null;
 let hrWaveformData = []; // for waveform canvas
 
 // ===== Smart Recommend State =====
@@ -1136,11 +1815,12 @@ async function connectHRMonitor() {
     hrMonitorConnected = true;
     btn.disabled = false;
     btn.classList.add('connected');
-    document.getElementById('hr-connect-icon').textContent = '💚';
+    document.getElementById('hr-connect-icon').innerHTML = ICONS.heartPulse;
     document.getElementById('hr-connect-text').textContent = '已连接 · 断开';
     document.getElementById('hr-metrics').style.display = '';
     document.getElementById('hr-waveform').style.display = '';
     document.getElementById('smart-recommend').style.display = '';
+    document.getElementById('hr-record-controls').style.display = '';
 
     // Start HRV modulation
     hrvModulationTimer = setInterval(hrvAudioModulation, 2000);
@@ -1181,7 +1861,7 @@ function disconnectHRMonitor() {
   const btn = document.getElementById('hr-connect-btn');
   if (btn) btn.classList.remove('connected');
   const iconEl = document.getElementById('hr-connect-icon');
-  if (iconEl) iconEl.textContent = '💓';
+  if (iconEl) iconEl.innerHTML = ICONS.heart;
   const textEl = document.getElementById('hr-connect-text');
   if (textEl) textEl.textContent = '连接心率带';
   const metricsEl = document.getElementById('hr-metrics');
@@ -1190,6 +1870,10 @@ function disconnectHRMonitor() {
   if (waveEl) waveEl.style.display = 'none';
   const smartEl = document.getElementById('smart-recommend');
   if (smartEl) smartEl.style.display = 'none';
+  const recCtrl = document.getElementById('hr-record-controls');
+  if (recCtrl) recCtrl.style.display = 'none';
+  // Don't auto-stop recording on brief disconnect - let user control it
+  // if (hrvRecording.active) stopHRVRecording();
   const hrEl = document.getElementById('hr-value');
   if (hrEl) hrEl.textContent = '--';
   const rmssdEl = document.getElementById('rmssd-value');
@@ -1223,8 +1907,8 @@ function onHRNotification(event) {
   const cutoff = now - 60000;
   hrvState.rrBuffer = hrvState.rrBuffer.filter(item => item.time > cutoff);
 
-  // Update HRV metrics every 5 seconds
-  if (now - hrvState.lastUpdate > 5000) {
+  // Update HRV metrics every heartbeat (v2: removed 5s throttle)
+  if (now - hrvState.lastUpdate > 1000) {
     updateHRVMetrics();
     hrvState.lastUpdate = now;
   }
@@ -1281,7 +1965,539 @@ function updateHRVMetrics() {
       smartRecommendTick();
     }
   }
+
+  // === Push HRV data to local API for doctor agent ===
+  pushHRVToAPI();
 }
+
+// HRV数据推送到本地API，供doctor agent读取
+function pushHRVToAPI() {
+  // 每个心跳即时推送，不再限流
+
+  const rrRecent = hrvState.rrBuffer.slice(-10).map(item => item.rr);
+  const payload = {
+    heartRate: hrvState.heartRate,
+    rmssd: hrvState.rmssd,
+    sdnn: hrvState.sdnn,
+    hrvLevel: hrvState.hrvLevel,
+    rrCount: hrvState.rrBuffer.length,
+    rrRecent: rrRecent,
+    connected: hrvState.heartRate > 0
+  };
+
+  try {
+    fetch('/api/hrv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch((e) => { console.error('HRV POST failed:', e); }); // 记录错误，便于调试
+  } catch (e) {
+    console.error('HRV POST exception:', e);
+  }
+}
+
+// ===== HRV Session Recording =====
+let hrvRecording = {
+  active: false,
+  sampleInterval: null
+};
+
+function startHRVRecording() {
+  const startBtn = document.getElementById('hr-record-start-btn');
+  const stopBtn = document.getElementById('hr-record-stop-btn');
+  const statusEl = document.getElementById('hr-record-status');
+
+  fetch('/api/hrv-session/start', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        statusEl.textContent = data.error;
+        return;
+      }
+      hrvRecording.active = true;
+      startBtn.textContent = '记录中...';
+      startBtn.disabled = true;
+      startBtn.classList.add('recording');
+      stopBtn.disabled = false;
+      statusEl.textContent = '已开始 · 采样中';
+
+      // Start sampling every 10 seconds
+      hrvRecording.sampleInterval = setInterval(pushHRVSample, 10000);
+      // Push first sample immediately
+      pushHRVSample();
+    })
+    .catch(e => {
+      statusEl.textContent = '启动失败: ' + e.message;
+    });
+}
+
+function stopHRVRecording() {
+  const startBtn = document.getElementById('hr-record-start-btn');
+  const stopBtn = document.getElementById('hr-record-stop-btn');
+  const statusEl = document.getElementById('hr-record-status');
+
+  if (hrvRecording.sampleInterval) {
+    clearInterval(hrvRecording.sampleInterval);
+    hrvRecording.sampleInterval = null;
+  }
+
+  fetch('/api/hrv-session/stop', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      hrvRecording.active = false;
+      startBtn.textContent = '开始记录';
+      startBtn.disabled = false;
+      startBtn.classList.remove('recording');
+      stopBtn.disabled = true;
+      if (data.ok) {
+        statusEl.textContent = `已保存 · ${data.sampleCount} 条采样`;
+        // Show practice report
+        if (data.report) {
+          showPracticeReport(data.report);
+        }
+      } else {
+        statusEl.textContent = data.error || '结束失败';
+      }
+    })
+    .catch(e => {
+      hrvRecording.active = false;
+      startBtn.textContent = '开始记录';
+      startBtn.disabled = false;
+      startBtn.classList.remove('recording');
+      stopBtn.disabled = true;
+      statusEl.textContent = '结束失败: ' + e.message;
+    });
+}
+
+function pushHRVSample() {
+  if (!hrvRecording.active) return;
+  const payload = {
+    heartRate: hrvState.heartRate || 0,
+    rmssd: hrvState.rmssd || 0,
+    sdnn: hrvState.sdnn || 0,
+    hrvLevel: hrvState.hrvLevel || 'none'
+  };
+  const statusEl = document.getElementById('hr-record-status');
+
+  fetch('/api/hrv-session/sample', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        statusEl.textContent = `采样中 · ${data.sampleCount} 条`;
+      }
+    })
+    .catch(e => {
+      console.error('HRV sample push failed:', e);
+    });
+}
+
+// ===== Resonance Frequency Test =====
+
+const RESONANCE_TEST_FREQS = [7.0, 6.5, 6.0, 5.5, 5.0]; // breaths/min, tested in order
+const RESONANCE_TEST_PHASE_MS = 120000; // 2 minutes per frequency
+const RESONANCE_TEST_GAP_MS = 30000; // 30 seconds free breathing between phases
+
+function startResonanceTest() {
+  if (resonanceTestState && resonanceTestState.running) return;
+  if (!hrMonitorConnected) {
+    document.getElementById('resonance-test-status').textContent = '⚠️ 请先连接 Polar H10';
+    return;
+  }
+  // Start HRV recording if not already
+  if (!hrvRecording.active) {
+    startHRVRecording();
+  }
+
+  resonanceTestState = {
+    running: true,
+    freqIdx: 0,
+    phase: 'breathing', // 'breathing' or 'gap'
+    timer: null,
+    startTime: Date.now(),
+    hrvData: RESONANCE_TEST_FREQS.map(() => ({ rmssd: [], sdnn: [], hr: [] })),
+    sampleTimer: null
+  };
+
+  const btn = document.getElementById('resonance-test-start-btn');
+  btn.disabled = true;
+  btn.textContent = '测定中...';
+
+  // Start first frequency phase
+  startResonanceTestPhase();
+}
+
+function startResonanceTestPhase() {
+  const state = resonanceTestState;
+  if (!state || !state.running) return;
+
+  const freq = RESONANCE_TEST_FREQS[state.freqIdx];
+  const statusEl = document.getElementById('resonance-test-status');
+  const dots = document.querySelectorAll('.resonance-progress-dot');
+
+  // Update progress dots
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === state.freqIdx);
+    dot.classList.toggle('done', i < state.freqIdx);
+  });
+
+  if (state.phase === 'breathing') {
+    // Set breathing to this frequency
+    breathFreq = freq;
+    breathRatio = '1:1';
+    breathMode = 'resonance';
+    document.getElementById('breath-mode-label').textContent = '频率测定 · ' + freq + ' 次/分';
+    statusEl.textContent = `正在测试 ${freq} 次/分 · 吸呼比 1:1 · 剩余 2:00`;
+
+    // Start breathing
+    if (!breathingActive) startBreathing();
+
+    // Start sampling for this phase
+    state.sampleTimer = setInterval(() => {
+      if (hrvState.rmssd) state.hrvData[state.freqIdx].rmssd.push(hrvState.rmssd);
+      if (hrvState.sdnn) state.hrvData[state.freqIdx].sdnn.push(hrvState.sdnn);
+      if (hrvState.heartRate) state.hrvData[state.freqIdx].hr.push(hrvState.heartRate);
+    }, 5000);
+
+    // Countdown timer
+    let remaining = RESONANCE_TEST_PHASE_MS;
+    state.timer = setInterval(() => {
+      remaining -= 1000;
+      const min = Math.floor(remaining / 60000);
+      const sec = Math.floor((remaining % 60000) / 1000);
+      statusEl.textContent = `正在测试 ${freq} 次/分 · 吸呼比 1:1 · 剩余 ${min}:${sec.toString().padStart(2, '0')}`;
+      if (remaining <= 0) {
+        clearInterval(state.timer);
+        clearInterval(state.sampleTimer);
+        endResonanceTestPhase();
+      }
+    }, 1000);
+
+  } else if (state.phase === 'gap') {
+    // Free breathing gap
+    if (breathingActive) stopBreathing();
+    document.getElementById('breath-text').textContent = '自由呼吸...';
+    statusEl.textContent = `休息 · 自由呼吸 · 剩余 0:30`;
+
+    let remaining = RESONANCE_TEST_GAP_MS;
+    state.timer = setInterval(() => {
+      remaining -= 1000;
+      const sec = Math.floor(remaining / 1000);
+      statusEl.textContent = `休息 · 自由呼吸 · 剩余 0:${sec.toString().padStart(2, '0')}`;
+      if (remaining <= 0) {
+        clearInterval(state.timer);
+        // Move to next frequency
+        state.freqIdx++;
+        state.phase = 'breathing';
+        if (state.freqIdx < RESONANCE_TEST_FREQS.length) {
+          startResonanceTestPhase();
+        } else {
+          finishResonanceTest();
+        }
+      }
+    }, 1000);
+  }
+}
+
+function endResonanceTestPhase() {
+  const state = resonanceTestState;
+  if (!state || !state.running) return;
+
+  if (state.freqIdx < RESONANCE_TEST_FREQS.length - 1) {
+    // There are more frequencies to test - go to gap
+    state.phase = 'gap';
+    startResonanceTestPhase();
+  } else {
+    // Last frequency - finish
+    finishResonanceTest();
+  }
+}
+
+function finishResonanceTest() {
+  const state = resonanceTestState;
+  if (!state) return;
+
+  if (breathingActive) stopBreathing();
+  if (state.timer) clearInterval(state.timer);
+  if (state.sampleTimer) clearInterval(state.sampleTimer);
+
+  // Stop HRV recording
+  if (hrvRecording.active) stopHRVRecording();
+
+  // Analyze results
+  const results = RESONANCE_TEST_FREQS.map((freq, i) => {
+    const data = state.hrvData[i];
+    const avgSDNN = data.sdnn.length ? data.sdnn.reduce((a, b) => a + b, 0) / data.sdnn.length : 0;
+    const avgRMSSD = data.rmssd.length ? data.rmssd.reduce((a, b) => a + b, 0) / data.rmssd.length : 0;
+    const hrRange = data.hr.length ? Math.max(...data.hr) - Math.min(...data.hr) : 0;
+    return { freq, avgSDNN, avgRMSSD, hrRange, sampleCount: data.rmssd.length };
+  });
+
+  // Find best: highest SDNN and highest HR oscillation
+  const bestSDNN = results.reduce((best, r) => r.avgSDNN > best.avgSDNN ? r : best, results[0]);
+  const bestHROsc = results.reduce((best, r) => r.hrRange > best.hrRange ? r : best, results[0]);
+
+  // Recommended frequency (prioritize SDNN, use HR oscillation as tiebreaker)
+  const recommended = bestSDNN.avgSDNN >= bestHROsc.avgSDNN ? bestSDNN : bestHROsc;
+
+  // Display results
+  const resultEl = document.getElementById('resonance-result');
+  let html = '<div style="margin-bottom:8px">🎯 <strong>推荐共振频率: ' + recommended.freq + ' 次/分</strong></div>';
+  html += '<div style="font-size:0.7rem;margin-bottom:8px;color:var(--text-muted)">';
+  results.forEach(r => {
+    const isBest = r.freq === recommended.freq;
+    html += '<div style="padding:2px 0;' + (isBest ? 'color:var(--accent);font-weight:600' : '') + '">';
+    html += r.freq + ' 次/分 → SDNN: ' + r.avgSDNN.toFixed(1) + 'ms · HR振荡: ' + r.hrRange.toFixed(1) + 'bpm · RMSSD: ' + r.avgRMSSD.toFixed(1) + 'ms';
+    if (isBest) html += ' ⭐';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div style="font-size:0.7rem;color:var(--text-muted)">最高SDNN频率: ' + bestSDNN.freq + ' 次/分 · 最大HR振荡频率: ' + bestHROsc.freq + ' 次/分</div>';
+  resultEl.innerHTML = html;
+  resultEl.classList.add('visible');
+
+  document.getElementById('resonance-test-status').textContent = '测定完成 ✅';
+  const btn = document.getElementById('resonance-test-start-btn');
+  btn.disabled = false;
+  btn.textContent = '🔬 重新测定';
+
+  // Update progress dots
+  document.querySelectorAll('.resonance-progress-dot').forEach(dot => {
+    dot.classList.remove('active');
+    dot.classList.add('done');
+  });
+
+  // Save report to server
+  saveResonanceTestReport(results, recommended);
+
+  state.running = false;
+}
+
+function saveResonanceTestReport(results, recommended) {
+  fetch('/api/hrv-session/resonance-test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      timestamp: new Date().toISOString(),
+      results,
+      recommendedFreq: recommended.freq,
+      recommendedSDNN: recommended.avgSDNN,
+      recommendedHROsc: recommended.hrRange
+    })
+  }).catch(e => console.error('Save resonance test failed:', e));
+}
+
+// ===== Practice Report =====
+
+function showPracticeReport(report) {
+  const metricsEl = document.getElementById('practice-report-metrics');
+  const detailEl = document.getElementById('practice-report-detail');
+
+  let metricsHtml = '';
+  metricsHtml += '<div class="practice-report-metric"><div class="label">练习前 RMSSD</div><div class="value">' + (report.rmssdBefore || '--') + '</div><div class="unit">ms</div></div>';
+  metricsHtml += '<div class="practice-report-metric"><div class="label">练习后 RMSSD</div><div class="value">' + (report.rmssdAfter || '--') + '</div><div class="unit">ms</div></div>';
+  metricsHtml += '<div class="practice-report-metric"><div class="label">最高 RMSSD</div><div class="value">' + (report.rmssdMax || '--') + '</div><div class="unit">ms</div></div>';
+  metricsHtml += '<div class="practice-report-metric"><div class="label">心率振荡幅度</div><div class="value">' + (report.hrRange || '--') + '</div><div class="unit">bpm</div></div>';
+  metricsEl.innerHTML = metricsHtml;
+
+  let detail = '练习时长: ' + (report.duration || '--');
+  if (report.rmssdBefore && report.rmssdAfter) {
+    const change = report.rmssdAfter - report.rmssdBefore;
+    const pct = report.rmssdBefore > 0 ? ((change / report.rmssdBefore) * 100).toFixed(1) : '--';
+    detail += ' · RMSSD变化: ' + (change >= 0 ? '+' : '') + change.toFixed(1) + 'ms (' + pct + '%)';
+  }
+  detailEl.textContent = detail;
+
+  document.getElementById('practice-report-overlay').classList.add('visible');
+}
+
+function closePracticeReport() {
+  document.getElementById('practice-report-overlay').classList.remove('visible');
+}
+
+// ===== Trend Chart =====
+
+function toggleTrendChart() {
+  const section = document.getElementById('trend-section');
+  const btn = document.getElementById('trend-toggle-btn');
+  const isVisible = section.classList.contains('visible');
+  section.classList.toggle('visible');
+  btn.classList.toggle('active');
+  if (!isVisible) {
+    loadTrendChart();
+  }
+}
+
+function loadTrendChart() {
+  fetch('/api/hrv-session/trend')
+    .then(r => r.json())
+    .then(data => {
+      renderTrendChart(data);
+    })
+    .catch(e => {
+      console.error('Load trend failed:', e);
+      document.getElementById('trend-section').innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px">加载趋势数据失败</div>';
+    });
+}
+
+function renderTrendChart(data) {
+  const ctx = document.getElementById('trend-chart');
+  if (!ctx) return;
+
+  if (trendChart) {
+    trendChart.destroy();
+  }
+
+  const labels = data.map(d => d.date);
+  const rmssdValues = data.map(d => d.avgRMSSD);
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'RMSSD (ms)',
+        data: rmssdValues,
+        borderColor: 'rgba(45,212,160,0.8)',
+        backgroundColor: 'rgba(45,212,160,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: 'rgba(45,212,160,1)',
+        pointBorderColor: 'rgba(45,212,160,0.5)',
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: 'rgba(255,255,255,0.6)', font: { size: 11 } }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(10,26,20,0.9)',
+          titleColor: 'rgba(45,212,160,1)',
+          bodyColor: 'rgba(255,255,255,0.8)',
+          borderColor: 'rgba(45,212,160,0.3)',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          title: { display: true, text: 'RMSSD (ms)', color: 'rgba(255,255,255,0.4)', font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+// ===== Doctor Control WebSocket Client =====
+// 接收后端推送的控制命令并执行
+(function initControlWS() {
+  let controlWs = null;
+  let reconnectTimer = null;
+
+  function connect() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    controlWs = new WebSocket(protocol + '//' + location.host + '/ws/hrv');
+
+    controlWs.onopen = () => {
+      console.log('🎮 Doctor control WS connected');
+    };
+
+    controlWs.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'control') {
+          executeControlCommand(msg.command);
+        }
+      } catch (e) {
+        console.error('Control WS parse error:', e);
+      }
+    };
+
+    controlWs.onclose = () => {
+      console.log('🎮 Doctor control WS disconnected, reconnecting...');
+      reconnectTimer = setTimeout(connect, 3000);
+    };
+
+    controlWs.onerror = () => {};
+  }
+
+  function executeControlCommand(cmd) {
+    console.log('🎮 Executing control:', JSON.stringify(cmd));
+    try {
+      switch (cmd.action) {
+        case 'preset':
+          // 切换预设
+          if (typeof playPreset === 'function') playPreset(cmd.preset);
+          break;
+        case 'breath':
+          // 切换呼吸模式
+          if (cmd.mode && typeof setBreathMode === 'function') setBreathMode(cmd.mode);
+          if (cmd.active && typeof startBreathing === 'function') startBreathing();
+          if (!cmd.active && typeof stopBreathing === 'function') stopBreathing();
+          break;
+        case 'volume':
+          // 调整单个声音音量
+          if (typeof setVolume === 'function' && activeSounds[cmd.sound]) setVolume(cmd.sound, cmd.volume);
+          break;
+        case 'volume_all':
+          // 调整所有声音音量
+          if (typeof setVolume === 'function') {
+            for (const id in activeSounds) setVolume(id, cmd.volume);
+          }
+          break;
+        case 'sound':
+          // 开关单个声音
+          if (cmd.active) {
+            if (typeof playSound === 'function') playSound(cmd.sound);
+          } else {
+            if (typeof stopSound === 'function') stopSound(cmd.sound);
+          }
+          break;
+        case 'smart':
+          // 开关智能推荐
+          if (typeof toggleSmartMode === 'function') toggleSmartMode(cmd.active);
+          else smartMode = cmd.active;
+          break;
+        case 'stop_all':
+          // 停止所有声音
+          if (typeof stopAllSounds === 'function') stopAllSounds();
+          else {
+            for (const id in activeSounds) {
+              if (typeof stopSound === 'function') stopSound(id);
+            }
+          }
+          break;
+        default:
+          console.warn('🎮 Unknown control action:', cmd.action);
+      }
+      // 回复执行结果
+      if (controlWs && controlWs.readyState === 1) {
+        controlWs.send(JSON.stringify({ type: 'control_result', action: cmd.action, success: true }));
+      }
+    } catch (e) {
+      console.error('🎮 Control execution error:', e);
+      if (controlWs && controlWs.readyState === 1) {
+        controlWs.send(JSON.stringify({ type: 'control_result', action: cmd.action, success: false, error: e.message }));
+      }
+    }
+  }
+
+  connect();
+})();
 
 function calculateRMSSD(rrIntervals) {
   if (rrIntervals.length < 2) return 0;
@@ -1515,6 +2731,7 @@ function updateSmartToggleUI() {
   const btn = document.getElementById('smart-toggle-btn');
   if (!btn) return;
   btn.classList.toggle('active', smartModeActive);
+  document.getElementById('smart-toggle-icon').innerHTML = ICONS.brain;
   document.getElementById('smart-toggle-text').textContent =
     smartModeActive ? '智能推荐中' : '智能推荐';
 }
@@ -1529,7 +2746,7 @@ function updateSmartReasonUI(profile) {
   }
 
   reasonEl.style.display = '';
-  document.getElementById('smart-reason-icon').textContent = profile.icon;
+  document.getElementById('smart-reason-icon').innerHTML = ICONS[profile.icon] || '';
   document.getElementById('smart-reason-text').textContent = profile.reason;
   document.getElementById('smart-profile-name').textContent = profile.name;
 }
@@ -1567,7 +2784,7 @@ function drawHRWaveform() {
   ctx.beginPath();
   // Waveform color syncs with HRV state
   const strokeColor = (hrMonitorConnected && hrvState.hrvLevel === 'high') ? '#34d399' :
-                      (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? '#fbbf24' : '#8b5cf6';
+                      (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? '#fbbf24' : '#2dd4a0';
   ctx.strokeStyle = strokeColor;
   ctx.lineWidth = 1.5;
   for (let i = 0; i < data.length; i++) {
@@ -1583,7 +2800,7 @@ function drawHRWaveform() {
   ctx.lineTo(0, h);
   ctx.closePath();
   const fillColor = (hrMonitorConnected && hrvState.hrvLevel === 'high') ? 'rgba(52,211,153,0.15)' :
-                    (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? 'rgba(251,191,36,0.15)' : 'rgba(139,92,246,0.15)';
+                    (hrMonitorConnected && hrvState.hrvLevel === 'medium') ? 'rgba(251,191,36,0.15)' : 'rgba(45,212,160,0.15)';
   const grad = ctx.createLinearGradient(0, 0, 0, h);
   grad.addColorStop(0, fillColor);
   grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -1594,11 +2811,96 @@ function drawHRWaveform() {
 // ===== Breath Mode Toggle =====
 
 function setBreathMode(mode) {
+  if (breathingActive) stopBreathing();
   breathMode = mode;
   document.getElementById('btn-478').classList.toggle('active', mode === '478');
   document.getElementById('btn-resonance').classList.toggle('active', mode === 'resonance');
-  document.getElementById('breath-mode-label').textContent = mode === '478' ? '4-7-8 呼吸法' : '共振呼吸';
-  if (breathingActive) { stopBreathing(); startBreathing(); }
+  document.getElementById('btn-resonance-test').classList.toggle('active', mode === 'resonance-test');
+
+  const configEl = document.getElementById('breath-config');
+  const testPanel = document.getElementById('resonance-test-panel');
+  const breathToggle = document.getElementById('breath-toggle');
+
+  if (mode === '478') {
+    document.getElementById('breath-mode-label').textContent = '4-7-8 呼吸法';
+    configEl.style.display = 'none';
+    testPanel.classList.remove('visible');
+    breathToggle.style.display = '';
+  } else if (mode === 'resonance') {
+    document.getElementById('breath-mode-label').textContent = '共振呼吸 · ' + breathFreq + ' 次/分';
+    configEl.style.display = 'flex';
+    testPanel.classList.remove('visible');
+    breathToggle.style.display = '';
+  } else if (mode === 'resonance-test') {
+    document.getElementById('breath-mode-label').textContent = '共振频率测定';
+    configEl.style.display = 'none';
+    testPanel.classList.add('visible');
+    breathToggle.style.display = 'none';
+  }
+}
+
+function setBreathFreq(freq) {
+  breathFreq = freq;
+  document.querySelectorAll('.breath-freq-btn').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.freq) === freq);
+  });
+  document.getElementById('breath-mode-label').textContent = '共振呼吸 · ' + freq + ' 次/分';
+  if (breathingActive && breathMode === 'resonance') {
+    stopBreathing();
+    startBreathing();
+  }
+}
+
+function setBreathRatio(ratio) {
+  breathRatio = ratio;
+  document.querySelectorAll('.breath-ratio-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.ratio === ratio);
+  });
+  if (breathingActive && breathMode === 'resonance') {
+    stopBreathing();
+    startBreathing();
+  }
+}
+
+function toggleBreathAudio() {
+  breathAudioEnabled = document.getElementById('breath-audio-check').checked;
+  if (breathAudioEnabled && !breathAudioCtx) {
+    breathAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playBreathTone(type) {
+  if (!breathAudioEnabled || !breathAudioCtx) return;
+  try {
+    const osc = breathAudioCtx.createOscillator();
+    const gain = breathAudioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(breathAudioCtx.destination);
+    if (type === 'inhale') {
+      osc.frequency.value = 440; // A4 - higher pitch for inhale
+      osc.type = 'sine';
+    } else {
+      osc.frequency.value = 330; // E4 - lower pitch for exhale
+      osc.type = 'sine';
+    }
+    gain.gain.setValueAtTime(0.15, breathAudioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, breathAudioCtx.currentTime + 0.5);
+    osc.start(breathAudioCtx.currentTime);
+    osc.stop(breathAudioCtx.currentTime + 0.5);
+  } catch(e) { console.warn('Breath tone failed:', e); }
+}
+
+function getBreathTimings() {
+  // Returns { inhaleMs, exhaleMs } based on breathFreq and breathRatio
+  const cycleMs = 60000 / breathFreq; // total cycle time in ms
+  const ratioParts = breathRatio.split(':').map(Number);
+  const inhalePart = ratioParts[0];
+  const exhalePart = ratioParts[1];
+  const total = inhalePart + exhalePart;
+  return {
+    inhaleMs: Math.round(cycleMs * inhalePart / total),
+    exhaleMs: Math.round(cycleMs * exhalePart / total)
+  };
 }
 
 // ===== Wake Lock (keeps screen on during playback) =====
@@ -1868,7 +3170,7 @@ function renderPresets() {
   const grid = document.getElementById('presets-grid');
   grid.innerHTML = PRESETS.map(p => `
     <button class="preset-btn" data-preset="${p.id}" onclick="applyPreset('${p.id}')">
-      <span class="preset-icon">${p.icon}</span>
+      <span class="preset-icon">${ICONS[p.icon] || ''}</span>
       <span class="preset-name">${p.name}</span>
       <span class="preset-desc">${p.desc}</span>
     </button>
@@ -1880,12 +3182,12 @@ function renderSounds() {
   grid.innerHTML = SOUNDS.map(s => `
     <div class="sound-card" data-sound="${s.id}" onclick="toggleSound('${s.id}')">
       <div class="card-content">
-        <span class="sound-icon">${s.icon}</span>
+        <span class="sound-icon">${ICONS[s.icon] || ''}</span>
         <div class="sound-name">${s.name}</div>
         <div class="sound-desc">${s.desc}</div>
         <div class="sound-toggle"></div>
         <div class="volume-control" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()">
-          <span class="volume-icon">🔊</span>
+          <span class="volume-icon">${ICONS.volume}</span>
           <input type="range" class="volume-slider" min="0" max="100" value="50"
             oninput="onVolumeChange('${s.id}', this.value)">
         </div>
@@ -2071,9 +3373,11 @@ function startBreathing() {
 function stopBreathing() {
   breathingActive = false;
   clearTimeout(breathingTimeout);
+  breathingTimeout = null;
   const circle = document.getElementById('breath-circle');
   const ring = document.querySelector('.breath-ring');
   circle.className = 'breath-circle';
+  circle.style.transition = 'transform 0.5s ease-in-out';
   circle.style.transform = 'translate(-50%, -50%) scale(1)';
   circle.style.background = '';
   circle.style.borderColor = '';
@@ -2114,39 +3418,45 @@ function breathCycle() {
   }, 4000);
 }
 
-// ===== Resonance Breathing (5s inhale + 5s exhale, ~6 breaths/min) =====
+// ===== Resonance Breathing (configurable frequency & ratio) =====
 
 function breathCycleResonance() {
   if (!breathingActive) return;
   const circle = document.getElementById('breath-circle');
   const text = document.getElementById('breath-text');
   const ring = document.querySelector('.breath-ring');
+  const timings = getBreathTimings();
 
-  // Inhale 5s
-  circle.className = 'breath-circle inhale-resonance';
+  // Inhale
+  circle.style.transition = `transform ${timings.inhaleMs}ms ease-in-out`;
+  circle.style.transform = 'translate(-50%, -50%) scale(3)';
   updateBreathCircleColor(circle, ring, 'inhale');
   text.textContent = '吸气...';
+  playBreathTone('inhale');
+
   breathingTimeout = setTimeout(() => {
     if (!breathingActive) return;
-    // Exhale 5s
-    circle.className = 'breath-circle exhale-resonance';
+    // Exhale
+    circle.style.transition = `transform ${timings.exhaleMs}ms ease-in-out`;
+    circle.style.transform = 'translate(-50%, -50%) scale(1)';
     updateBreathCircleColor(circle, ring, 'exhale');
     text.textContent = '呼气...';
+    playBreathTone('exhale');
+
     breathingTimeout = setTimeout(() => {
       if (!breathingActive) return;
-      circle.className = 'breath-circle';
       breathCycleResonance();
-    }, 5000);
-  }, 5000);
+    }, timings.exhaleMs);
+  }, timings.inhaleMs);
 }
 
 // Sync breath circle color with HRV state
 function updateBreathCircleColor(circle, ring, phase) {
   if (!hrMonitorConnected || hrvState.hrvLevel === 'none') {
-    // No HR monitor — default purple
-    circle.style.background = 'radial-gradient(circle, rgba(139,92,246,0.6), rgba(139,92,246,0.1))';
-    circle.style.borderColor = 'rgba(139,92,246,0.3)';
-    if (ring) ring.style.borderColor = 'rgba(139,92,246,0.15)';
+    // No HR monitor — default teal
+    circle.style.background = 'radial-gradient(circle, rgba(45,212,160,0.5), rgba(20,184,166,0.08))';
+    circle.style.borderColor = 'rgba(45,212,160,0.3)';
+    if (ring) ring.style.borderColor = 'rgba(45,212,160,0.15)';
     return;
   }
   // Detect HR-breath sync: if HRV is high and we're in resonance mode, show green
@@ -2160,10 +3470,10 @@ function updateBreathCircleColor(circle, ring, phase) {
     circle.style.borderColor = 'rgba(251,191,36,0.3)';
     if (ring) ring.style.borderColor = 'rgba(251,191,36,0.2)';
   } else {
-    // Low HRV — purple/cool tone
-    circle.style.background = 'radial-gradient(circle, rgba(139,92,246,0.5), rgba(99,102,241,0.1))';
-    circle.style.borderColor = 'rgba(139,92,246,0.3)';
-    if (ring) ring.style.borderColor = 'rgba(139,92,246,0.15)';
+    // Low HRV — teal/cool tone
+    circle.style.background = 'radial-gradient(circle, rgba(45,212,160,0.5), rgba(20,184,166,0.1))';
+    circle.style.borderColor = 'rgba(45,212,160,0.3)';
+    if (ring) ring.style.borderColor = 'rgba(45,212,160,0.15)';
   }
 }
 
@@ -2196,19 +3506,10 @@ function initParticles() {
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Gradient background
-    const grad = ctx.createRadialGradient(
-      canvas.width * 0.5, canvas.height * 0.3, 0,
-      canvas.width * 0.5, canvas.height * 0.3, canvas.height * 0.8
-    );
-    grad.addColorStop(0, '#0f172a');
-    grad.addColorStop(0.5, '#0a0e1a');
-    grad.addColorStop(1, '#050810');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Canvas is transparent — CSS background image shows through
 
     // HRV-driven particle color and speed
-    let pColorR = 139, pColorG = 92, pColorB = 246;
+    let pColorR = 45, pColorG = 212, pColorB = 160;
     let speedMul = 1;
     if (hrMonitorConnected && hrvState.hrvLevel !== 'none') {
       if (hrvState.hrvLevel === 'high') {
@@ -2218,7 +3519,7 @@ function initParticles() {
         pColorR = 251; pColorG = 191; pColorB = 36; // amber — transitional
         speedMul = 1;
       } else {
-        pColorR = 139; pColorG = 92; pColorB = 246; // purple — stressed
+        pColorR = 45; pColorG = 212; pColorB = 160; // teal — stressed
         speedMul = 1.3; // slightly faster
       }
     }
@@ -2263,7 +3564,7 @@ function togglePauseAll() {
     });
     pausedVolumes = {};
     isPaused = false;
-    document.getElementById('pause-icon').textContent = '⏸';
+    document.getElementById('pause-icon').innerHTML = ICONS.pause;
     document.getElementById('pause-text').textContent = '全部暂停';
     document.getElementById('pause-btn').classList.remove('paused');
   } else {
@@ -2277,7 +3578,7 @@ function togglePauseAll() {
       }
     });
     isPaused = true;
-    document.getElementById('pause-icon').textContent = '▶';
+    document.getElementById('pause-icon').innerHTML = ICONS.play;
     document.getElementById('pause-text').textContent = '继续播放';
     document.getElementById('pause-btn').classList.add('paused');
   }
@@ -2298,7 +3599,7 @@ function resetAll() {
     updatePresetButtons();
     // Reset all volume sliders to 50
     document.querySelectorAll('.volume-slider').forEach(slider => slider.value = 50);
-    document.getElementById('pause-icon').textContent = '⏸';
+    document.getElementById('pause-icon').innerHTML = ICONS.pause;
     document.getElementById('pause-text').textContent = '全部暂停';
     document.getElementById('pause-btn').classList.remove('paused');
   }, 100);
@@ -2475,6 +3776,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTimerPresets();
   initParticles();
 
+  // Set initial SVG icons
+  document.getElementById('pause-icon').innerHTML = ICONS.pause;
+  document.getElementById('reset-icon').innerHTML = ICONS.reset;
+  document.getElementById('hr-connect-icon').innerHTML = ICONS.heartPulse;
+  document.getElementById('smart-toggle-icon').innerHTML = ICONS.brain;
+
   // iOS / unsupported browser fallback for Web Bluetooth
   if (!navigator.bluetooth) {
     const hrSection = document.getElementById('hr-monitor-section');
@@ -2508,6 +3815,40 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('config-name-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') confirmSaveConfig();
   });
+
+  // ===== Scroll Reveal with IntersectionObserver =====
+  const revealSections = document.querySelectorAll('.presets, .sounds, .timer, .breathing, .configs, .hr-monitor');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  revealSections.forEach(section => revealObserver.observe(section));
+
+  // ===== Staggered card entrance =====
+  const staggerCards = (gridSelector, delayMs) => {
+    const grid = document.querySelector(gridSelector);
+    if (!grid) return;
+    const cards = grid.children;
+    for (let i = 0; i < cards.length; i++) {
+      cards[i].style.opacity = '0';
+      cards[i].style.transform = 'translateY(12px)';
+      cards[i].style.transition = `opacity 0.5s var(--ease-out-expo) ${i * delayMs}ms, transform 0.5s var(--ease-out-expo) ${i * delayMs}ms`;
+      requestAnimationFrame(() => {
+        cards[i].style.opacity = '1';
+        cards[i].style.transform = 'translateY(0)';
+      });
+    }
+  };
+
+  // Stagger after initial render
+  setTimeout(() => {
+    staggerCards('.presets-grid', 60);
+    staggerCards('.sounds-grid', 40);
+  }, 100);
 });
 </script>
 </body>
