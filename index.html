@@ -1367,6 +1367,27 @@ body {
   font-weight: 500;
   margin-top: 2px;
 }
+/* ===== Stress Regulation Practice ===== */
+.regulation-practice {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border);
+}
+.regulation-title { font-size: .88rem; color: var(--text-primary); margin-bottom: 6px; }
+.regulation-note { font-size: .72rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+.regulation-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.regulation-btn { flex: 1; min-width: 150px; background: rgba(45,212,160,.1); border: 1px solid rgba(45,212,160,.35); border-radius: 20px; padding: 9px 14px; color: var(--accent); cursor: pointer; font: inherit; font-size: .8rem; }
+.regulation-btn:disabled { opacity: .55; cursor: not-allowed; }
+.regulation-status { font-size: .75rem; color: var(--text-secondary); }
+.regulation-progress { height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin-top: 12px; overflow: hidden; }
+.regulation-progress-bar { height: 100%; width: 0; background: var(--accent); transition: width .5s ease; }
+.regulation-safety { margin-top: 8px; font-size: .68rem; color: var(--text-muted); }
+.context-form { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.context-form label { font-size: .7rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; }
+.context-form input, .context-form select { background: rgba(255,255,255,.06); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); padding: 7px; font: inherit; font-size: .75rem; }
+.context-form input[type=range] { padding: 0; accent-color: var(--accent); }
+.context-score { color: var(--accent); font-size: .72rem; }
+
 /* ===== Breath Mode Toggle ===== */
 .breath-mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
 .breath-mode-btn { background: transparent; border: 1px solid var(--glass-border); border-radius: 20px; padding: 4px 14px; color: var(--text-muted); cursor: pointer; font-family: inherit; font-size: 0.75rem; transition: all 0.3s var(--ease-out-expo); }
@@ -1590,6 +1611,24 @@ body {
           <span class="smart-profile-name" id="smart-profile-name"></span>
         </div>
       </div>
+      <div class="regulation-practice" id="regulation-practice">
+        <div class="regulation-title">压力调节练习 · 约 7 分钟</div>
+        <div class="regulation-note">先测 60 秒个人基线，再用你当前的共振呼吸频率练习 5 分钟，最后 60 秒观察恢复。根据自己的变化评估，不与别人比较。</div>
+        <div class="context-form" aria-label="练习背景记录">
+          <label>练习前压力 <span class="context-score" id="stress-score-value">5/10</span><input id="stress-score" type="range" min="0" max="10" value="5" oninput="document.getElementById('stress-score-value').textContent=this.value+'/10'"></label>
+          <label>练习后压力 <span class="context-score" id="stress-after-value">未填写</span><input id="stress-after" type="range" min="0" max="10" value="5" oninput="document.getElementById('stress-after-value').textContent=this.value+'/10'"></label>
+          <label>睡眠时长<input id="sleep-hours" type="number" min="0" max="24" step="0.5" placeholder="小时"></label>
+          <label>咖啡因<select id="caffeine-level"><option value="none">无</option><option value="low">少量</option><option value="high">较多</option></select></label>
+          <label>今日运动<select id="exercise-level"><option value="none">无</option><option value="light">轻度</option><option value="hard">高强度</option></select></label>
+          <label>测量姿势<select id="posture"><option value="sitting">坐姿</option><option value="lying">躺姿</option><option value="standing">站姿</option></select></label>
+        </div>
+        <div class="regulation-controls">
+          <button class="regulation-btn" id="regulation-start-btn" onclick="toggleRegulationPractice()">开始压力调节</button>
+          <span class="regulation-status" id="regulation-status">连接 Polar H10 后可开始</span>
+        </div>
+        <div class="regulation-progress"><div class="regulation-progress-bar" id="regulation-progress-bar"></div></div>
+        <div class="regulation-safety">若出现头晕、胸痛、呼吸困难或不适，请立即停止并按需寻求专业帮助。本练习不是诊断或治疗。</div>
+      </div>
       <!-- Trend Chart -->
       <div style="margin-top:12px;text-align:center">
         <button class="trend-toggle-btn" id="trend-toggle-btn" onclick="toggleTrendChart()">📈 RMSSD趋势</button>
@@ -1766,6 +1805,8 @@ let breathAudioCtx = null;
 let resonanceTestState = null; // null or { phase, freqIdx, timer, hrvData, ... }
 let trendChart = null;
 let hrWaveformData = []; // for waveform canvas
+let personalBaseline = JSON.parse(localStorage.getItem('hrv-personal-baseline') || '{"rmssd":0,"sdnn":0,"samples":0}');
+let regulationContext = null;
 
 // ===== Smart Recommend State =====
 let smartModeActive = false;
@@ -2095,6 +2136,90 @@ function pushHRVSample() {
     });
 }
 
+// ===== Guided Stress Regulation Practice =====
+let regulationPractice = { running: false, phase: null, timer: null, startedAt: 0, baseline: [], intervention: [], recovery: [] };
+const REGULATION_PHASES = [
+  { id: 'baseline', label: '基线测量 · 自由呼吸', ms: 60000 },
+  { id: 'intervention', label: '共振呼吸 · 跟随圆圈', ms: 300000 },
+  { id: 'recovery', label: '恢复测量 · 自由呼吸', ms: 60000 }
+];
+
+function toggleRegulationPractice() {
+  if (regulationPractice.running) { stopRegulationPractice('已停止'); return; }
+  if (!hrMonitorConnected) { showToast('请先连接 Polar H10'); return; }
+  startRegulationPractice();
+}
+function startRegulationPractice() {
+  regulationPractice = { running: true, phase: 0, timer: null, startedAt: Date.now(), baseline: [], intervention: [], recovery: [] };
+  regulationContext = {
+    stressBefore: Number(document.getElementById('stress-score').value),
+    sleepHours: Number(document.getElementById('sleep-hours').value) || null,
+    caffeine: document.getElementById('caffeine-level').value,
+    exercise: document.getElementById('exercise-level').value,
+    posture: document.getElementById('posture').value,
+    breathFreq
+  };
+  if (hrvRecording.active) pushHRVSample();
+  const btn = document.getElementById('regulation-start-btn');
+  btn.textContent = '停止练习'; btn.classList.add('active');
+  setBreathMode('resonance'); startBreathing();
+  runRegulationPhase();
+}
+function runRegulationPhase() {
+  if (!regulationPractice.running) return;
+  const phase = REGULATION_PHASES[regulationPractice.phase];
+  const status = document.getElementById('regulation-status');
+  const started = Date.now();
+  status.textContent = phase.label;
+  if (regulationPractice.phase === 0 || regulationPractice.phase === 2) {
+    if (breathingActive) stopBreathing();
+  } else if (!breathingActive) startBreathing();
+  regulationPractice.timer = setInterval(() => {
+    if (!regulationPractice.running) return;
+    const elapsed = Date.now() - started;
+    const bucket = regulationPractice.phase === 0 ? regulationPractice.baseline : regulationPractice.phase === 1 ? regulationPractice.intervention : regulationPractice.recovery;
+    const validSample = hrvState.rmssd >= 5 && hrvState.rmssd <= 250 && hrvState.sdnn >= 5 && hrvState.sdnn <= 300 && hrvState.lastUpdate > Date.now() - 5000;
+    if (validSample) bucket.push({ time: Date.now(), rmssd: hrvState.rmssd, sdnn: hrvState.sdnn, hr: hrvState.heartRate });
+    const pct = Math.min(100, ((regulationPractice.phase + elapsed / phase.ms) / REGULATION_PHASES.length) * 100);
+    document.getElementById('regulation-progress-bar').style.width = pct + '%';
+    if (elapsed >= phase.ms) {
+      clearInterval(regulationPractice.timer);
+      regulationPractice.phase++;
+      if (regulationPractice.phase < REGULATION_PHASES.length) runRegulationPhase();
+      else finishRegulationPractice();
+    }
+  }, 5000);
+}
+function stopRegulationPractice(message) {
+  clearInterval(regulationPractice.timer);
+  regulationPractice.running = false;
+  if (breathingActive) stopBreathing();
+  document.getElementById('regulation-start-btn').textContent = '开始压力调节';
+  document.getElementById('regulation-status').textContent = message;
+}
+function finishRegulationPractice() {
+  const avg = values => values.length ? values.reduce((sum, x) => sum + x.rmssd, 0) / values.length : 0;
+  const before = avg(regulationPractice.baseline), during = avg(regulationPractice.intervention), after = avg(regulationPractice.recovery);
+  const change = before > 0 ? ((after - before) / before) * 100 : 0;
+  if (regulationPractice.baseline.length < 3 || regulationPractice.recovery.length < 3) {
+    stopRegulationPractice('数据不足：请保持佩戴稳定并重新练习');
+    showToast('有效 HRV 样本不足，报告未用于判断');
+    return;
+  }
+  const samples = regulationPractice.baseline.concat(regulationPractice.intervention, regulationPractice.recovery);
+  const oldN = personalBaseline.samples || 0;
+  personalBaseline = { rmssd: ((personalBaseline.rmssd * oldN) + before) / (oldN + 1), sdnn: personalBaseline.sdnn, samples: oldN + 1, updatedAt: new Date().toISOString() };
+  localStorage.setItem('hrv-personal-baseline', JSON.stringify(personalBaseline));
+  regulationContext.stressAfter = Number(document.getElementById('stress-after').value);
+  localStorage.setItem('hrv-last-context', JSON.stringify(regulationContext));
+  const history = JSON.parse(localStorage.getItem('hrv-practice-history') || '[]');
+  history.push({ date: new Date().toISOString().slice(0, 10), before, during, after, change, context: regulationContext });
+  localStorage.setItem('hrv-practice-history', JSON.stringify(history.slice(-30)));
+  const status = change >= 5 ? '练习后 HRV 高于基线，今天的呼吸可能对你有帮助。' : change <= -5 ? '练习后暂未恢复到基线，先休息，不要强行加深呼吸。' : '练习前后接近，建议在相似时间重复几天再判断。';
+  stopRegulationPractice(status);
+  showPracticeReport({ rmssdBefore: before.toFixed(1), rmssdAfter: after.toFixed(1), rmssdMax: during.toFixed(1), hrRange: '--', duration: '约7分钟' });
+}
+
 // ===== Resonance Frequency Test =====
 
 const RESONANCE_TEST_FREQS = [7.0, 6.5, 6.0, 5.5, 5.0]; // breaths/min, tested in order
@@ -2270,6 +2395,10 @@ function finishResonanceTest() {
     dot.classList.add('done');
   });
 
+  // Save report locally as the user's current breathing preference too.
+  localStorage.setItem('hrv-recommended-frequency', JSON.stringify({ freq: recommended.freq, updatedAt: new Date().toISOString() }));
+  breathFreq = recommended.freq;
+  document.querySelectorAll('.breath-freq-btn').forEach(btn => btn.classList.toggle('active', parseFloat(btn.dataset.freq) === breathFreq));
   // Save report to server
   saveResonanceTestReport(results, recommended);
 
@@ -2335,11 +2464,13 @@ function loadTrendChart() {
   fetch('/api/hrv-session/trend')
     .then(r => r.json())
     .then(data => {
-      renderTrendChart(data);
+      const local = JSON.parse(localStorage.getItem('hrv-practice-history') || '[]');
+      const merged = data && data.length ? data : local.map(x => ({ date: x.date, avgRMSSD: Number(x.before.toFixed(1)), sessionCount: 1 }));
+      renderTrendChart(merged);
     })
     .catch(e => {
-      console.error('Load trend failed:', e);
-      document.getElementById('trend-section').innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px">加载趋势数据失败</div>';
+      const local = JSON.parse(localStorage.getItem('hrv-practice-history') || '[]');
+      renderTrendChart(local.map(x => ({ date: x.date, avgRMSSD: Number(x.before.toFixed(1)), sessionCount: 1 })));
     });
 }
 
