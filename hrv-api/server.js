@@ -7,7 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
-const PORT = Number(process.env.PORT || 6666);
+// 6666 is blocked by Chrome as an unsafe port; 8787 is browser-safe by default.
+const PORT = Number(process.env.PORT || 8787);
 const STATIC_DIR = path.resolve(__dirname, '..');
 
 // 最新HRV数据
