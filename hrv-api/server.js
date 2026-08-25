@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
-const PORT = 8080;
-const STATIC_DIR = '/mnt/e/xunlei/relax';
+const PORT = Number(process.env.PORT || 6666);
+const STATIC_DIR = path.resolve(__dirname, '..');
 
 // 最新HRV数据
 let latestHRV = {
